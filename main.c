@@ -29,7 +29,15 @@
 #define PIN_SDA             16
 #define PIN_SCL             17
 
+// GC notation
+#define PIN_GC_B            PIN_1K
 #define PIN_GC_A            18
+#define PIN_GC_Y            PIN_4P
+#define PIN_GC_X            PIN_2K
+#define PIN_GC_L            PIN_SELECT  // It's a long story
+#define PIN_GC_R            PIN_4K
+//#define PIN_GC_ZL           PIN_UNUSED    // Does not have a physical button mapped
+#define PIN_GC_ZR           PIN_3K
 
 #define PIN_GC_CUP          PIN_2P
 #define PIN_GC_CDOWN        19
@@ -45,48 +53,25 @@
 #define ADC_Y               1
 #define ADC_B               2
 
-// Struct representing an analog stick
-typedef union {
-    struct {
-        int8_t x : 8;
-        int8_t y : 8;
-    } fields;
-    int16_t bits;
-} Analog;
+// Bitmasks
+#define MASK_B              0b0000000000000001
+#define MASK_A              0b0000000000000010
+#define MASK_Y              0b0000000000000100
+#define MASK_X              0b0000000000001000
+#define MASK_L              0b0000000000010000
+#define MASK_R              0b0000000000100000
+#define MASK_ZL             0b0000000001000000
+#define MASK_ZR             0b0000000010000000
+#define MASK_START          0b0000000100000000
+#define MASK_SELECT         0b0000001000000000
+#define MASK_L3             0b0000010000000000  // Unused
+#define MASK_R3             0b0000100000000000  // Unused
+#define MASK_HOME           0b0001000000000000
+#define MASK_CAPTURE        0b0010000000000000
+#define MASK_UNUSED1        0b0100000000000000
+#define MASK_UNUSED2        0b1000000000000000
 
-Analog leftStick;
-
-typedef union {
-    struct {
-        int8_t x : 8;
-        int8_t y : 8;
-    } fields;
-    uint16_t bits;
-} DigitalToAnalog;
-
-DigitalToAnalog cStick;
-
-// Struct representing a 16 button array
-typedef union {
-    struct {
-        uint8_t b : 1;
-        uint8_t a : 1;
-        uint8_t x : 1;
-        uint8_t y : 1;
-        uint8_t l : 1;
-        uint8_t r : 1;
-        uint8_t zl : 1;
-        uint8_t zr : 1;
-        uint8_t start : 1;
-        uint8_t select : 1;
-        uint8_t home : 1;
-        uint8_t screenshot : 1;
-        // Last two bits are unused
-    } fields;
-    uint16_t bits;
-} Buttons;
-
-Buttons buttons;
+pokken_controller_report_t report;
 
 int main(void)
 {  
@@ -122,50 +107,74 @@ int main(void)
     {
         tud_task();
 
-        // Read input into appropriate structs
+        // Read input into appropriate struct
+        // Buttons first
+        if (gpio_get(PIN_GC_B) == 0) report.buttons |= MASK_B;
+        else report.buttons ^= MASK_B;
+
+        if (gpio_get(PIN_GC_A) == 0) report.buttons |= MASK_A;
+        else report.buttons ^= MASK_A;
+
+        if (gpio_get(PIN_GC_Y) == 0) report.buttons |= MASK_Y;
+        else report.buttons ^= MASK_Y;
+
+        if (gpio_get(PIN_GC_X) == 0) report.buttons |= MASK_X;
+        else report.buttons ^= MASK_X;
+
+        if (gpio_get(PIN_GC_L) == 0) report.buttons |= MASK_L;
+        else report.buttons ^= MASK_L;
+
+        if (gpio_get(PIN_GC_R) == 0) report.buttons |= MASK_R;
+        else report.buttons ^= MASK_R;
+
+        if (gpio_get(PIN_GC_ZR) == 0) report.buttons |= MASK_ZR;
+        else report.buttons ^= MASK_X;
+
+        if (gpio_get(PIN_START) == 0) report.buttons |= MASK_START;
+        else report.buttons ^= MASK_START;
+
+        if (gpio_get(PIN_SELECT) == 0) report.buttons |= MASK_SELECT;
+        else report.buttons ^= MASK_SELECT;
+
+        // Analog
+        // TODO
+        report.x = 127;
+        report.y = 127;
+
+        // D-Pad
+        // TODO
+        report.hat = GAMEPAD_HAT_CENTERED;
+
+        // C-Stick
         if ((gpio_get(PIN_GC_CUP) == 0) && (gpio_get(PIN_GC_CDOWN) == 1)) // C-Up && not C-Down
         {
-            cStick.fields.y = 127;
+            report.rz = 127;
 
-            if ((gpio_get(PIN_GC_CLEFT) == 0) && (gpio_get(PIN_GC_CRIGHT) == 1)) cStick.fields.x = -127;
-            else if ((gpio_get(PIN_GC_CLEFT) == 1) && (gpio_get(PIN_GC_CRIGHT) == 0)) cStick.fields.x = 127;
-            else cStick.fields.x = 0;
+            if ((gpio_get(PIN_GC_CLEFT) == 0) && (gpio_get(PIN_GC_CRIGHT) == 1)) report.z = -127;
+            else if ((gpio_get(PIN_GC_CLEFT) == 1) && (gpio_get(PIN_GC_CRIGHT) == 0)) report.z = 127;
+            else report.z = 0;
         }
         else if ((gpio_get(PIN_GC_CUP) == 1) && (gpio_get(PIN_GC_CDOWN) == 0)) // C-Down && not C_Up
         {
-            cStick.fields.y = -127;
+            report.rz = -127;
 
-            if ((gpio_get(PIN_GC_CLEFT) == 0) && (gpio_get(PIN_GC_CRIGHT) == 1)) cStick.fields.x = -127;
-            else if ((gpio_get(PIN_GC_CLEFT) == 1) && (gpio_get(PIN_GC_CRIGHT) == 0)) cStick.fields.x = 127;
-            else cStick.fields.x = 0;
+            if ((gpio_get(PIN_GC_CLEFT) == 0) && (gpio_get(PIN_GC_CRIGHT) == 1)) report.z = -127;
+            else if ((gpio_get(PIN_GC_CLEFT) == 1) && (gpio_get(PIN_GC_CRIGHT) == 0)) report.z = 127;
+            else report.z = 0;
         }
         else // Neither C-Up nor C-Down or both of them at once
         {
-            cStick.fields.y = 0;
+            report.rz = 0;
 
-            if ((gpio_get(PIN_GC_CLEFT) == 0) && (gpio_get(PIN_GC_CRIGHT) == 1)) cStick.fields.x = -127;
-            else if ((gpio_get(PIN_GC_CLEFT) == 1) && (gpio_get(PIN_GC_CRIGHT) == 0)) cStick.fields.x = 127;
-            else cStick.fields.x = 0;
+            if ((gpio_get(PIN_GC_CLEFT) == 0) && (gpio_get(PIN_GC_CRIGHT) == 1)) report.z = -127;
+            else if ((gpio_get(PIN_GC_CLEFT) == 1) && (gpio_get(PIN_GC_CRIGHT) == 0)) report.z = 127;
+            else report.z = 0;
         }
 
-        buttons.fields.b = !gpio_get(PIN_1K);
-        buttons.fields.a = !gpio_get(PIN_GC_A);
-        buttons.fields.x = !gpio_get(PIN_2K);
-        buttons.fields.y = !gpio_get(PIN_4P);
-        //buttons.fields.l = !gpio_get(PIN_SELECT); // How to deal with Melee people 101
-        buttons.fields.r = !gpio_get(PIN_4K);
-        //buttons.fields.zl = !gpio_get(PIN_UNDEFINED);
-        buttons.fields.zr = !gpio_get(PIN_3K);
-        
-        buttons.fields.start = !gpio_get(PIN_START);
-        buttons.fields.select = !gpio_get(PIN_SELECT);
-        // L3 and R3 should go here
-        buttons.fields.home = !gpio_get(PIN_HOME);
-
-        // Debug thing
-        buttons.fields.x = 1;
+        // Debug
+        report.buttons |= MASK_X;
 
         // Pack into the relevant structs and send to host
-        hid_task(leftStick.bits, cStick.bits, buttons.bits);
+        hid_task(report);
     }
 }

@@ -34,31 +34,19 @@ void tud_resume_cb(void)
 // USB HID
 //--------------------------------------------------------------------+
 
-static void send_hid_report(int16_t leftStick, int16_t rightStick, uint16_t btn)
+static void send_hid_report(pokken_controller_report_t report)
 {
     // skip if hid is not ready yet
     if ( !tud_hid_ready() ) return;
-
-    hid_gamepad_report_t report =
-    {
-    .x   = 0, .y = 0, .z = 0, .rz = 0,
-    .hat = 0, .buttons = 0
-    };
-
-    report.x = leftStick >> 8;
-    report.y = leftStick;
-    report.z = rightStick >> 8;
-    report.rz = rightStick;
-    report.buttons = btn; 
 
     tud_hid_report(REPORT_ID_GAMEPAD, &report, sizeof(report));
 }
 
 // Every 10ms, we will sent 1 report for each HID profile (keyboard, mouse etc ..)
 // tud_hid_report_complete_cb() is used to send the next report after previous one is complete
-void hid_task(int16_t leftStick, int16_t rightStick, uint16_t btn)
+void hid_task(pokken_controller_report_t report)
 {
-  send_hid_report(leftStick, rightStick, btn);
+  send_hid_report(report);
 }
 
 // Invoked when sent REPORT successfully to host
@@ -91,22 +79,5 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_
 
   if (report_type == HID_REPORT_TYPE_OUTPUT)
   {
-    // Set keyboard LED e.g Capslock, Numlock etc...
-    if (report_id == REPORT_ID_KEYBOARD)
-    {
-      // bufsize should be (at least) 1
-      if ( bufsize < 1 ) return;
-
-      uint8_t const kbd_leds = buffer[0];
-
-      if (kbd_leds & KEYBOARD_LED_CAPSLOCK)
-      {
-        // Capslock On: disable blink, turn led on
-      }
-      else
-      {
-        // Caplocks Off: back to normal blink
-      }
-    }
   }
 }
