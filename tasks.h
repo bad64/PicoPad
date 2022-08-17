@@ -9,12 +9,13 @@
 
 typedef struct TU_ATTR_PACKED
 {
-  int8_t  x;
-  int8_t  y;
-  int8_t  z;
-  int8_t  rz;
-  uint8_t hat;
   uint16_t buttons;
+  uint8_t hat;
+  uint8_t  x;
+  uint8_t  y;
+  uint8_t  z;
+  uint8_t  rz;
+  uint8_t vendorSpec;
 } pokken_controller_report_t;
 
 void tud_mount_cb(void);
