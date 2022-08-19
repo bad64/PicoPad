@@ -10,7 +10,8 @@ set(CMAKE_CXX_STANDARD 17)
 pico_sdk_init()
 
 add_executable(picopad)
-target_sources(picopad PUBLIC ${CMAKE_CURRENT_LIST_DIR}/main.c ${CMAKE_CURRENT_LIST_DIR}/usb_descriptors.c ${CMAKE_CURRENT_LIST_DIR}/tasks.c)
+target_sources(picopad PUBLIC ${CMAKE_CURRENT_LIST_DIR}/main.c ${CMAKE_CURRENT_LIST_DIR}/usb_descriptors.c ${CMAKE_CURRENT_LIST_DIR}/tasks.c ${CMAKE_CURRENT_LIST_DIR}/Analog/Analog.c)
+#target_sources(picopad PUBLIC ${CMAKE_CURRENT_LIST_DIR}/main.c ${CMAKE_CURRENT_LIST_DIR}/usb_descriptors.c ${CMAKE_CURRENT_LIST_DIR}/tasks.c)
 target_include_directories(picopad PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
 pico_add_extra_outputs(picopad)

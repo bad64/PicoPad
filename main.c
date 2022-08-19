@@ -73,36 +73,62 @@
 #define MASK_UNUSED1        0b0100000000000000
 #define MASK_UNUSED2        0b1000000000000000
 
+// Hat
+#define HAT_NEUTRAL     -1
+#define HAT_UP          0
+#define HAT_UP_RIGHT    1
+#define HAT_RIGHT       2
+#define HAT_DOWN_RIGHT  3
+#define HAT_DOWN        4
+#define HAT_DOWN_LEFT   5
+#define HAT_LEFT        6
+#define HAT_UP_LEFT     7
+
 // Debug stuff
-// NOTE: The Pico is powerful, yes, but maybe don't run all the tests at the same time
+// NOTE: The Pico is powerful, yes, but *maybe* don't run all the tests at the same time
 //#define BUTTONS_DEBUG
 //#define HAT_DEBUG
 //#define ANALOG_DEBUG
 //#define CSTICK_DEBUG
 
 #if defined(BUTTONS_DEBUG) || defined(HAT_DEBUG) || defined(ANALOG_DEBUG) || defined(CSTICK_DEBUG)
-    uint32_t counter = 0;
+    uint16_t delay = 2048;
 #endif
 
 #if defined(BUTTONS_DEBUG)
     int masks[8] = { MASK_B, MASK_A, MASK_Y, MASK_X, MASK_L, MASK_R, MASK_ZR, MASK_START };
-    uint8_t idx = 0;
+    uint8_t buttonsIdx = 0;
+    uint16_t buttonsCounter = 0;
 #endif
 
 #if defined(ANALOG_DEBUG) || defined(CSTICK_DEBUG)
-    uint8_t idx = 0;
-
     typedef struct {
         uint8_t x;
         uint8_t y;
-    } Coords;
+    } testCoords;
+#endif
+
+#if defined(HAT_DEBUG)
+    uint16_t hatCounter = 0;
+#endif
+
+#if defined(ANALOG_DEBUG)
+    uint8_t analogIdx = 0;
+    uint16_t analogCounter = 0;
+#endif
+
+#if defined(CSTICK_DEBUG)
+    uint8_t cstickIdx = 0;
+    uint16_t cstickCounter = 0;
 #endif
 
 pokken_controller_report_t report;
 
+Coordinates coords;
+
 int main(void)
 {  
-    // Setup block
+    /* Setup block */
     stdio_init_all();
 
     // Init GPIO
@@ -125,11 +151,14 @@ int main(void)
     adc_gpio_init(27);
     adc_gpio_init(28);
 
+    // Init analog struct
+    initCoordsStruct(&coords);
+
     // Init USB
     board_init();
     tusb_init();
 
-    // Loop block
+    /* Loop block */
     while (1)
     {
         tud_task();
@@ -137,20 +166,20 @@ int main(void)
         // Read input into appropriate struct
         // Buttons first
         #ifdef BUTTONS_DEBUG
-            if (counter == UINT16_MAX)
+            if (buttonsCounter == delay)
             {
-                report.buttons ^= masks[idx];
-                if (idx + 1 < 8) idx++;
-                else idx = 0;
-                counter = 0;
+                report.buttons ^= masks[buttonsIdx];
+                if (buttonsIdx + 1 < 8) buttonsIdx++;
+                else buttonsIdx = 0;
+                buttonsCounter = 0;
             }
-            else counter++;
+            else buttonsCounter++;
         #else
             if (gpio_get(PIN_GC_B) == 0) report.buttons |= MASK_B;
             else report.buttons &= MASK_B;
 
-            //if (gpio_get(PIN_GC_A) == 0) report.buttons |= MASK_A;
-            //else report.buttons &= MASK_A;
+            if (gpio_get(PIN_GC_A) == 0) report.buttons |= MASK_A;
+            else report.buttons &= MASK_A;
 
             if (gpio_get(PIN_GC_Y) == 0) report.buttons |= MASK_Y;
             else report.buttons &= MASK_Y;
@@ -175,6 +204,7 @@ int main(void)
         #endif
 
         // Handling the left stick
+        updateCoordinates(&coords);
         if (gpio_get(PIN_LS_DP) == 0)
         {
             // D-Pad
@@ -182,15 +212,22 @@ int main(void)
             report.y = 127;
 
             #ifdef HAT_DEBUG
-                if (counter == UINT16_MAX)
+                if (hatCounter == delay)
                 {
-                    counter = 0;
+                    hatCounter = 0;
                     report.hat++;
                 }
-                else counter++;
+                else hatCounter++;
             #else
-                //TODO
-                report.hat = -1;
+                if (((coords.polar.deg > 337.5) && (coords.polar.deg < 360)) || ((coords.polar.deg >= 0) && (coords.polar.deg < 22.5))) report.hat = HAT_LEFT;
+                else if ((coords.polar.deg >= 22.5) && (coords.polar.deg < 67.5)) report.hat = HAT_UP_LEFT;
+                else if ((coords.polar.deg >= 67.5) && (coords.polar.deg < 112.5)) report.hat = HAT_UP;
+                else if ((coords.polar.deg >= 112.5) && (coords.polar.deg < 157.5)) report.hat = HAT_UP_RIGHT;
+                else if ((coords.polar.deg >= 157.5) && (coords.polar.deg < 202.5)) report.hat = HAT_RIGHT;
+                else if ((coords.polar.deg >= 202.5) && (coords.polar.deg < 247.5)) report.hat = HAT_DOWN_RIGHT;
+                else if ((coords.polar.deg >= 247.5) && (coords.polar.deg < 292.5)) report.hat = HAT_DOWN;
+                else if ((coords.polar.deg >= 292.5) && (coords.polar.deg < 337.5)) report.hat = HAT_DOWN_LEFT;
+                else report.hat = HAT_NEUTRAL;
             #endif
         }
         else
@@ -199,7 +236,7 @@ int main(void)
             report.hat = -1;    // Center D-Pad
 
             #ifdef ANALOG_DEBUG
-                static Coords testcoords[9];
+                static testCoords testcoords[9];
 
                 testcoords[0].y = 255;
                 testcoords[0].x = 0;
@@ -228,26 +265,25 @@ int main(void)
                 testcoords[8].y = 0;
                 testcoords[8].x = 255;
 
-                if (counter == UINT16_MAX)
+                if (analogCounter == delay)
                 {
-                    if (idx + 1 < 9) idx++;
-                    else idx = 0;
-                    counter = 0;
+                    if (analogIdx + 1 < 9) analogIdx++;
+                    else analogIdx = 0;
+                    analogCounter = 0;
                 }
-                else counter++;
+                else analogCounter++;
 
-                report.x = testcoords[idx].x;
-                report.y = testcoords[idx].y;
+                report.x = testcoords[analogIdx].x;
+                report.y = testcoords[analogIdx].y;
             #else
-                // TODO
-                report.x = 127;
-                report.y = 127;
+                report.x = coords.x;
+                report.y = coords.y;
             #endif
         }
 
         // C-Stick
         #ifdef CSTICK_DEBUG
-            static Coords testcoords[9];
+            static testCoords testcoords[9];
 
             testcoords[0].y = 255;
             testcoords[0].x = 0;
@@ -276,16 +312,16 @@ int main(void)
             testcoords[8].y = 0;
             testcoords[8].x = 255;
 
-            if (counter == UINT16_MAX)
+            if (cstickCounter == delay)
             {
-                if (idx + 1 < 9) idx++;
-                else idx = 0;
-                counter = 0;
+                if (cstickIdx + 1 < 9) cstickIdx++;
+                else cstickIdx = 0;
+                cstickCounter = 0;
             }
-            else counter++;
+            else cstickCounter++;
 
-            report.z = testcoords[idx].x;
-            report.rz = testcoords[idx].y;
+            report.z = testcoords[cstickIdx].x;
+            report.rz = testcoords[cstickIdx].y;
         #else
             if ((gpio_get(PIN_GC_CUP) == 0) && (gpio_get(PIN_GC_CDOWN) == 1)) // C-Up && not C-Down
             {
