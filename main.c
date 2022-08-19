@@ -2,6 +2,7 @@
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
 #include "hardware/adc.h"
+#include "pico/bootrom.h"
 
 #include "bsp/board.h"
 #include "tusb.h"
@@ -144,6 +145,12 @@ int main(void)
 
     // Set GC output line
     //gpio_set_dir(29, GPIO_OUT);
+
+    // Shall we go to BOOTSEL mode ?
+    if (gpio_get(PIN_SELECT) == 0)
+    {
+        reset_usb_boot(0, 0);
+    }
 
     // Init analog pins
     adc_init();
