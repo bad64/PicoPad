@@ -11,6 +11,7 @@
 #include "tasks.h"
 
 #include "Analog/Analog.h"
+#include "comms/i2c.h"
 
 // Pin definitions
 #define PIN_DPAD_DOWN       0
@@ -75,15 +76,23 @@
 #define MASK_UNUSED2        0b1000000000000000
 
 // Hat
-#define HAT_NEUTRAL     -1
-#define HAT_UP          0
-#define HAT_UP_RIGHT    1
-#define HAT_RIGHT       2
-#define HAT_DOWN_RIGHT  3
-#define HAT_DOWN        4
-#define HAT_DOWN_LEFT   5
-#define HAT_LEFT        6
-#define HAT_UP_LEFT     7
+#define HAT_NEUTRAL         -1
+#define HAT_UP              0
+#define HAT_UP_RIGHT        1
+#define HAT_RIGHT           2
+#define HAT_DOWN_RIGHT      3
+#define HAT_DOWN            4
+#define HAT_DOWN_LEFT       5
+#define HAT_LEFT            6
+#define HAT_UP_LEFT         7
+
+// Mode masks
+#define MODE_SPLIT_DPAD     0b0001
+#define MODE_I2C_NUNCHUK    0b0010
+#define MODE_UNUSED1        0b0100
+#define MODE_UNUSED2        0b1000
+
+uint8_t mode;
 
 // Debug stuff
 // NOTE: The Pico is powerful, yes, but *maybe* don't run all the tests at the same time
@@ -123,14 +132,19 @@
     uint16_t cstickCounter = 0;
 #endif
 
+// Useful variables
 pokken_controller_report_t report;
 
 Coordinates coords;
+
+i2c_inst_t* i2c;
+uint8_t i2cDataBuf[6];
 
 int main(void)
 {  
     /* Setup block */
     stdio_init_all();
+    mode = 0;
 
     // Init GPIO
     for (int i = 0; i < 16; i++)
@@ -146,8 +160,25 @@ int main(void)
     // Set GC output line
     //gpio_set_dir(29, GPIO_OUT);
 
-    // Shall we go to BOOTSEL mode ?
+    /* ALTERNATE MODES */
+    // Bootsel
     if (gpio_get(PIN_SELECT) == 0) reset_usb_boot(0, 0);
+    // Physical Dpad
+    if (gpio_get(PIN_GC_B) == 0) mode |= MODE_SPLIT_DPAD;
+    // i2c Nunchuk mode
+    if (gpio_get(PIN_START) == 0)
+    {
+        mode |= MODE_I2C_NUNCHUK;
+
+        i2c_init(i2c0, 100 * 1000); // Init i2c @ 100KHz
+
+        gpio_set_function(PIN_SDA, GPIO_FUNC_I2C);
+        gpio_set_function(PIN_SCL, GPIO_FUNC_I2C);
+        gpio_pull_up(PIN_SDA);
+        gpio_pull_up(PIN_SCL);
+
+        initNunchuk(i2c0);
+    }
 
     // Init analog pins
     adc_init();
@@ -208,81 +239,177 @@ int main(void)
         #endif
 
         // Handling the left stick
-        updateCoordinates(&coords);
-        if (gpio_get(PIN_LS_DP) == 0)
+        if (mode &= MODE_SPLIT_DPAD)
         {
-            // D-Pad
-            report.x = 127;     // Center analog
-            report.y = 127;
-
-            #ifdef HAT_DEBUG
-                if (hatCounter == delay)
-                {
-                    hatCounter = 0;
-                    report.hat++;
-                }
-                else hatCounter++;
-            #else
-                if (((coords.polar.deg > 337.5) && (coords.polar.deg < 360)) || ((coords.polar.deg >= 0) && (coords.polar.deg < 22.5))) report.hat = HAT_LEFT;
-                else if ((coords.polar.deg >= 22.5) && (coords.polar.deg < 67.5)) report.hat = HAT_UP_LEFT;
-                else if ((coords.polar.deg >= 67.5) && (coords.polar.deg < 112.5)) report.hat = HAT_UP;
-                else if ((coords.polar.deg >= 112.5) && (coords.polar.deg < 157.5)) report.hat = HAT_UP_RIGHT;
-                else if ((coords.polar.deg >= 157.5) && (coords.polar.deg < 202.5)) report.hat = HAT_RIGHT;
-                else if ((coords.polar.deg >= 202.5) && (coords.polar.deg < 247.5)) report.hat = HAT_DOWN_RIGHT;
-                else if ((coords.polar.deg >= 247.5) && (coords.polar.deg < 292.5)) report.hat = HAT_DOWN;
-                else if ((coords.polar.deg >= 292.5) && (coords.polar.deg < 337.5)) report.hat = HAT_DOWN_LEFT;
+            // TODO: SOCD modes, this is LR=N
+            if ((gpio_get(PIN_DPAD_UP) == 0) && (gpio_get(PIN_DPAD_DOWN) == 1)) // Up && not Down
+            {
+                if ((gpio_get(PIN_DPAD_LEFT) == 0) && (gpio_get(PIN_DPAD_RIGHT) == 1)) report.hat = HAT_UP_LEFT;
+                else if ((gpio_get(PIN_DPAD_LEFT) == 1) && (gpio_get(PIN_DPAD_RIGHT) == 0)) report.hat = HAT_UP_RIGHT;
+                else report.hat = HAT_UP;
+            }
+            else if ((gpio_get(PIN_DPAD_UP) == 1) && (gpio_get(PIN_DPAD_DOWN) == 0)) // Down && not Up
+            {
+                if ((gpio_get(PIN_DPAD_LEFT) == 0) && (gpio_get(PIN_DPAD_RIGHT) == 1)) report.hat = HAT_DOWN_LEFT;
+                else if ((gpio_get(PIN_DPAD_LEFT) == 1) && (gpio_get(PIN_DPAD_RIGHT) == 0)) report.hat = HAT_DOWN_RIGHT;
+                else report.hat = HAT_DOWN;
+            }
+            else // Neither Up nor Down or both of them at once
+            {
+                if ((gpio_get(PIN_DPAD_LEFT) == 0) && (gpio_get(PIN_DPAD_RIGHT) == 1)) report.hat = HAT_LEFT;
+                else if ((gpio_get(PIN_DPAD_LEFT) == 1) && (gpio_get(PIN_DPAD_RIGHT) == 0)) report.hat = HAT_RIGHT;
                 else report.hat = HAT_NEUTRAL;
-            #endif
+            }
         }
         else
         {
-            // Analog
-            report.hat = -1;    // Center D-Pad
+            updateCoordinates(&coords);
+            if (gpio_get(PIN_LS_DP) == 0)
+            {
+                // D-Pad
+                report.x = 127;     // Center analog
+                report.y = 127;
 
-            #ifdef ANALOG_DEBUG
-                static testCoords testcoords[9];
+                #ifdef HAT_DEBUG
+                    if (hatCounter == delay)
+                    {
+                        hatCounter = 0;
+                        report.hat++;
+                    }
+                    else hatCounter++;
+                #else
+                    if (((coords.polar.deg > 337.5) && (coords.polar.deg < 360)) || ((coords.polar.deg >= 0) && (coords.polar.deg < 22.5))) report.hat = HAT_LEFT;
+                    else if ((coords.polar.deg >= 22.5) && (coords.polar.deg < 67.5)) report.hat = HAT_UP_LEFT;
+                    else if ((coords.polar.deg >= 67.5) && (coords.polar.deg < 112.5)) report.hat = HAT_UP;
+                    else if ((coords.polar.deg >= 112.5) && (coords.polar.deg < 157.5)) report.hat = HAT_UP_RIGHT;
+                    else if ((coords.polar.deg >= 157.5) && (coords.polar.deg < 202.5)) report.hat = HAT_RIGHT;
+                    else if ((coords.polar.deg >= 202.5) && (coords.polar.deg < 247.5)) report.hat = HAT_DOWN_RIGHT;
+                    else if ((coords.polar.deg >= 247.5) && (coords.polar.deg < 292.5)) report.hat = HAT_DOWN;
+                    else if ((coords.polar.deg >= 292.5) && (coords.polar.deg < 337.5)) report.hat = HAT_DOWN_LEFT;
+                    else report.hat = HAT_NEUTRAL;
+                #endif
+            }
+            else
+            {
+                // Analog
+                report.hat = -1;    // Center D-Pad
 
-                testcoords[0].y = 255;
-                testcoords[0].x = 0;
+                #ifdef ANALOG_DEBUG
+                    static testCoords testcoords[9];
 
-                testcoords[1].y = 255;
-                testcoords[1].x = 127;
+                    testcoords[0].y = 255;
+                    testcoords[0].x = 0;
 
-                testcoords[2].y = 255;
-                testcoords[2].x = 255;
+                    testcoords[1].y = 255;
+                    testcoords[1].x = 127;
 
-                testcoords[3].y = 127;
-                testcoords[3].x = 0;
+                    testcoords[2].y = 255;
+                    testcoords[2].x = 255;
 
-                testcoords[4].y = 127;
-                testcoords[4].x = 127;
+                    testcoords[3].y = 127;
+                    testcoords[3].x = 0;
 
-                testcoords[5].y = 127;
-                testcoords[5].x = 255;
+                    testcoords[4].y = 127;
+                    testcoords[4].x = 127;
 
-                testcoords[6].y = 0;
-                testcoords[6].x = 0;
+                    testcoords[5].y = 127;
+                    testcoords[5].x = 255;
 
-                testcoords[7].y = 0;
-                testcoords[7].x = 127;
+                    testcoords[6].y = 0;
+                    testcoords[6].x = 0;
 
-                testcoords[8].y = 0;
-                testcoords[8].x = 255;
+                    testcoords[7].y = 0;
+                    testcoords[7].x = 127;
 
-                if (analogCounter == delay)
-                {
-                    if (analogIdx + 1 < 9) analogIdx++;
-                    else analogIdx = 0;
-                    analogCounter = 0;
-                }
-                else analogCounter++;
+                    testcoords[8].y = 0;
+                    testcoords[8].x = 255;
 
-                report.x = testcoords[analogIdx].x;
-                report.y = testcoords[analogIdx].y;
-            #else
-                report.x = coords.x;
-                report.y = coords.y;
-            #endif
+                    if (analogCounter == delay)
+                    {
+                        if (analogIdx + 1 < 9) analogIdx++;
+                        else analogIdx = 0;
+                        analogCounter = 0;
+                    }
+                    else analogCounter++;
+
+                    report.x = testcoords[analogIdx].x;
+                    report.y = testcoords[analogIdx].y;
+                #else
+                    if ((mode & MODE_I2C_NUNCHUK) == 1)
+                    {
+                        static int retval;
+                        retval = readNunchuk(i2c, i2cDataBuf);
+                        if (retval == 0)
+                        {
+                            //report.x = i2cDataBuf[0];
+                            //report.y = i2cDataBuf[1];
+                            report.x = 191;
+                            report.y = 127;
+                        }
+                        else
+                        {
+                            // How to define error codes without UART or a pin-controlled LED 101
+                            retval = retval * -1;
+                            switch (retval)
+                            {
+                                case 1:
+                                    report.x = 0;
+                                    report.y = 0;
+                                    break;
+                                case 2:
+                                    report.x = 127;
+                                    report.y = 0;
+                                    break;
+                                case 3:
+                                    report.x = 255;
+                                    report.y = 0;
+                                    break;
+                                case 4:
+                                    report.x = 0;
+                                    report.y = 127;
+                                    break;
+                                case 5:
+                                    // Might want to not use that one
+                                    report.x = 127;
+                                    report.y = 127;
+                                    break;
+                                case 6:
+                                    report.x = 255;
+                                    report.y = 127;
+                                    break;
+                                case 7:
+                                    report.x = 0;
+                                    report.y = 255;
+                                    break;
+                                case 8:
+                                    report.x = 127;
+                                    report.y = 255;
+                                    break;
+                                case 9:
+                                    report.x = 255;
+                                    report.y = 255;
+                                    break;
+                                default:
+                                    report.x = 191;
+                                    report.y = 191;
+                                    break;
+                            }
+                        }
+
+                        // TODO: Z && C ?
+                    }
+                    else if ((mode & MODE_I2C_NUNCHUK) == 0)
+                    {
+                        report.x = 64;
+                        report.y = 127;
+                    }
+                    else    // Should not happen
+                    {
+                        report.x = 127;
+                        report.y = 127;
+                    }
+                #endif
+            }
         }
 
         // C-Stick

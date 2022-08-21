@@ -6,7 +6,7 @@
 
 #include "hardware/adc.h"
 
-#pragma message "AnalogLever library v0.0.1"
+//#pragma message "AnalogLever library v0.0.1"
 
 /****************************************************
  * General analog header to include in your project *
@@ -47,8 +47,8 @@ void convertToPolar(PolarSystem* self, uint16_t x, uint16_t y);
 typedef struct {
     Axis _x;
     Axis _y;
-    uint8_t x;
-    uint8_t y;
+    int16_t x;
+    int16_t y;
     PolarSystem polar;
 } Coordinates;
 
