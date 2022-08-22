@@ -95,6 +95,13 @@
 uint8_t mode;
 
 // Debug stuff
+int retval; // Old reliable !
+void haltCatchFire(const char* msg, int errcode)
+{
+    // TODO: Find a better way to panic
+    while(1) {}
+}
+
 // NOTE: The Pico is powerful, yes, but *maybe* don't run all the tests at the same time
 //#define BUTTONS_DEBUG
 //#define HAT_DEBUG
@@ -137,6 +144,7 @@ uint8_t mode;
 pokken_controller_report_t report;
 
 Coordinates coords;
+int leverLock;
 
 i2c_inst_t* i2c;
 uint8_t i2cDataBuf[6];
@@ -146,6 +154,7 @@ int main(void)
     /* Setup block */
     stdio_init_all();
     mode = 0;
+    leverLock = 1;
 
     // Init GPIO
     for (int i = 0; i < 16; i++)
@@ -193,7 +202,16 @@ int main(void)
     adc_gpio_init(28);
 
     // Init analog struct
-    initCoordsStruct(&coords);
+    retval = initCoordsStruct(&coords);
+    if (retval != 0)
+    {
+        haltCatchFire("Error initializing coordinates struct !", retval);
+    }
+    adc_select_input(0);
+    coords._x.offset = coords._x.center - adc_read();
+
+    adc_select_input(1);
+    coords._y.offset = coords._y.center - adc_read();
 
     // Init USB
     board_init();
@@ -281,7 +299,12 @@ int main(void)
         }
         else
         {
-            updateCoordinates(&coords);
+            retval = updateCoordinates(&coords);
+            if (retval != 0)
+            {
+                haltCatchFire("Error updating coordinates struct !", retval);
+            }
+
             if (gpio_get(PIN_LS_DP) == 0)
             {
                 // D-Pad
@@ -359,10 +382,8 @@ int main(void)
                         retval = readNunchuk(i2c, i2cDataBuf);
                         if (retval == 0)
                         {
-                            //report.x = i2cDataBuf[0];
-                            //report.y = i2cDataBuf[1];
-                            report.x = 191;
-                            report.y = 127;
+                            report.x = i2cDataBuf[0];
+                            report.y = i2cDataBuf[1];
                         }
                         else
                         {
@@ -418,8 +439,24 @@ int main(void)
                     }
                     else if ((mode & MODE_I2C_NUNCHUK) == 0)
                     {
-                        report.x = (uint8_t)coords.x;
-                        report.y = (uint8_t)coords.y;
+                        // Lock the lever reading until actuation
+                        if (leverLock)
+                        {
+                            if ((coords.x != 127) || (coords.y != 127))
+                            {
+                                leverLock = 0;
+                            }
+                            else
+                            {
+                                report.x = 127;
+                                report.y = 127;
+                            }
+                        }
+                        else
+                        {
+                            report.x = (uint8_t)coords.x;
+                            report.y = (uint8_t)coords.y;
+                        }
                     }
                     else    // Should not happen
                     {
