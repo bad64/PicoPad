@@ -107,6 +107,7 @@ uint8_t mode;
 
 #if defined(BUTTONS_DEBUG)
     int masks[8] = { MASK_B, MASK_A, MASK_Y, MASK_X, MASK_L, MASK_R, MASK_ZR, MASK_START };
+    int buttons[] = { PIN_GC_B, PIN_GC_A, PIN_GC_Y, PIN_GC_X, PIN_GC_L, PIN_GC_R, PIN_GC_ZR, PIN_START };
     uint8_t buttonsIdx = 0;
     uint16_t buttonsCounter = 0;
 #endif
@@ -149,11 +150,16 @@ int main(void)
     // Init GPIO
     for (int i = 0; i < 16; i++)
     {
+        gpio_init(i);
         gpio_set_dir(i, GPIO_IN);
         gpio_pull_up(i);
     }
+
+    gpio_init(18);
     gpio_set_dir(18, GPIO_IN);
     gpio_pull_up(18);
+    
+    gpio_init(19);
     gpio_set_dir(19, GPIO_IN);
     gpio_pull_up(19);
 
@@ -200,47 +206,59 @@ int main(void)
 
         // Read input into appropriate struct
         // Buttons first
-        #ifdef BUTTONS_DEBUG
-            if (buttonsCounter == delay)
+        #if defined(BUTTONS_DEBUG)
+            if (buttonsCounter >= delay)
             {
-                report.buttons ^= masks[buttonsIdx];
-                if (buttonsIdx + 1 < 8) buttonsIdx++;
-                else buttonsIdx = 0;
+                if ((report.buttons & masks[buttonsIdx]) == 0)
+                {
+                    report.buttons |= masks[buttonsIdx];
+                }
+                else if ((report.buttons & masks[buttonsIdx]) >= 1)
+                {
+                    report.buttons &= ~masks[buttonsIdx];
+
+                    if (buttonsIdx + 1 < 8) buttonsIdx++;
+                    else buttonsIdx = 0;
+                }
+
                 buttonsCounter = 0;
             }
             else buttonsCounter++;
         #else
-            if (gpio_get(PIN_GC_B) == 0) report.buttons |= MASK_B;
-            else report.buttons &= MASK_B;
+            if (gpio_get(PIN_1K) == 0) report.buttons |= MASK_B;
+            else if (gpio_get(PIN_1K) >= 1) report.buttons &= ~MASK_B;
 
             if (gpio_get(PIN_GC_A) == 0) report.buttons |= MASK_A;
-            else report.buttons &= MASK_A;
+            else if (gpio_get(PIN_1K) >= 1) report.buttons &= ~MASK_A;
 
             if (gpio_get(PIN_GC_Y) == 0) report.buttons |= MASK_Y;
-            else report.buttons &= MASK_Y;
+            else if (gpio_get(PIN_1K) >= 1) report.buttons &= ~MASK_Y;
 
             if (gpio_get(PIN_GC_X) == 0) report.buttons |= MASK_X;
-            else report.buttons &= MASK_X;
+            else if (gpio_get(PIN_1K) >= 1) report.buttons &= ~MASK_X;
 
             if (gpio_get(PIN_GC_L) == 0) report.buttons |= MASK_L;
-            else report.buttons &= MASK_L;
+            else if (gpio_get(PIN_1K) >= 1)report.buttons &= ~MASK_L;
 
             if (gpio_get(PIN_GC_R) == 0) report.buttons |= MASK_R;
-            else report.buttons &= MASK_R;
+            else if (gpio_get(PIN_1K) >= 1) report.buttons &= ~MASK_R;
 
             if (gpio_get(PIN_GC_ZR) == 0) report.buttons |= MASK_ZR;
-            else report.buttons &= MASK_X;
+            else if (gpio_get(PIN_1K) >= 1) report.buttons &= ~MASK_ZR;
 
             if (gpio_get(PIN_START) == 0) report.buttons |= MASK_START;
-            else report.buttons &= MASK_START;
+            else if (gpio_get(PIN_1K) >= 1) report.buttons &= ~MASK_START;
 
             if (gpio_get(PIN_SELECT) == 0) report.buttons |= MASK_SELECT;
-            else report.buttons &= MASK_SELECT;
+            else if (gpio_get(PIN_1K) >= 1) report.buttons &= ~MASK_SELECT;
         #endif
 
         // Handling the left stick
         if (mode &= MODE_SPLIT_DPAD)
         {
+            report.x = 127;
+            report.y = 127;
+
             // TODO: SOCD modes, this is LR=N
             if ((gpio_get(PIN_DPAD_UP) == 0) && (gpio_get(PIN_DPAD_DOWN) == 1)) // Up && not Down
             {
@@ -270,7 +288,7 @@ int main(void)
                 report.x = 127;     // Center analog
                 report.y = 127;
 
-                #ifdef HAT_DEBUG
+                #if defined(HAT_DEBUG)
                     if (hatCounter == delay)
                     {
                         hatCounter = 0;
@@ -294,7 +312,7 @@ int main(void)
                 // Analog
                 report.hat = -1;    // Center D-Pad
 
-                #ifdef ANALOG_DEBUG
+                #if defined(ANALOG_DEBUG)
                     static testCoords testcoords[9];
 
                     testcoords[0].y = 255;
@@ -400,8 +418,8 @@ int main(void)
                     }
                     else if ((mode & MODE_I2C_NUNCHUK) == 0)
                     {
-                        report.x = 64;
-                        report.y = 127;
+                        report.x = (uint8_t)coords.x;
+                        report.y = (uint8_t)coords.y;
                     }
                     else    // Should not happen
                     {
@@ -413,7 +431,7 @@ int main(void)
         }
 
         // C-Stick
-        #ifdef CSTICK_DEBUG
+        #if defined(CSTICK_DEBUG)
             static testCoords testcoords[9];
 
             testcoords[0].y = 255;
@@ -454,7 +472,7 @@ int main(void)
             report.z = testcoords[cstickIdx].x;
             report.rz = testcoords[cstickIdx].y;
         #else
-            if ((gpio_get(PIN_GC_CUP) == 0) && (gpio_get(PIN_GC_CDOWN) == 1)) // C-Up && not C-Down
+            if ((gpio_get(PIN_GC_CUP) == 0) && (gpio_get(PIN_GC_CDOWN) == 1)) // C-Down && not C-Up
             {
                 report.rz = 255;
 
@@ -462,7 +480,7 @@ int main(void)
                 else if ((gpio_get(PIN_GC_CLEFT) == 1) && (gpio_get(PIN_GC_CRIGHT) == 0)) report.z = 255;
                 else report.z = 127;
             }
-            else if ((gpio_get(PIN_GC_CUP) == 1) && (gpio_get(PIN_GC_CDOWN) == 0)) // C-Down && not C_Up
+            else if ((gpio_get(PIN_GC_CUP) == 1) && (gpio_get(PIN_GC_CDOWN) == 0)) // C-Up & not C-Down
             {
                 report.rz = 0;
 

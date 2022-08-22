@@ -74,12 +74,14 @@ void initCoordsStruct(Coordinates* self)
 {
     /* X axis */
     self->_x.channel = 0;
-    self->_x.center = 512;
+    self->_x.center = 2048;
 
     #if defined(LEVER_JLM)
         // Empirical values; will need to be adjusted on a case by case basis
-        self->_x.minimum = self->_x.center - 275;
-        self->_x.maximum = self->_x.center + 275;
+        //self->_x.minimum = self->_x.center - 275;
+        //self->_x.maximum = self->_x.center + 275;
+        self->_x.minimum = 1024;
+        self->_x.maximum = 3072;
         self->_x.offset = -13;
     #endif
 
@@ -94,7 +96,7 @@ void initCoordsStruct(Coordinates* self)
 
     /* Y axis */
     self->_y.channel = 1;
-    self->_y.center = 512;
+    self->_y.center = 5048;
 
     #if defined(LEVER_JLM)
         // Same as above
