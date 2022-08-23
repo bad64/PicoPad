@@ -18,6 +18,8 @@ uint16_t axisGetValue(Axis* self)
     for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
     {
         self->sampleArray[i] = adc_read() + self->offset;
+        if (self->sampleArray[i] < self-> minimum) self->sampleArray[i] = self->minimum;
+        else if (self->sampleArray[i] < self-> maximum) self->sampleArray[i] = self->maximum;
     }
 
     uint16_t averageBuf = 0;
@@ -26,7 +28,8 @@ uint16_t axisGetValue(Axis* self)
         averageBuf += self->sampleArray[i];
     }
 
-    return map(averageBuf / NUMBER_OF_SAMPLES, self->minimum, self->maximum, -127, 127);
+    //return map(averageBuf / NUMBER_OF_SAMPLES, self->minimum, self->maximum, -127, 127);
+    return averageBuf / NUMBER_OF_SAMPLES;
 }
 
 void convertToPolar(PolarSystem* self, uint16_t x, uint16_t y)
@@ -87,10 +90,12 @@ int16_t updateCoordinates(Coordinates* self)
 {
     static int16_t xbuf, ybuf;
 
-    xbuf = axisGetValue(&self->_x);
-    ybuf = axisGetValue(&self->_y);
+    xbuf = axisGetValue(&self->_x) - self->_x.center;
+    ybuf = axisGetValue(&self->_y) - self->_y.center;
 
     convertToPolar(&self->polar, xbuf, ybuf);
+
+    // TODO: only map at the end of this function
 
     if (self->polar.r < DEADZONE)
     {

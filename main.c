@@ -57,7 +57,7 @@
 #define ADC_Y               1
 #define ADC_B               2
 
-// Bitmasks
+// Switch bitmasks
 #define MASK_B              0b0000000000000001
 #define MASK_A              0b0000000000000010
 #define MASK_Y              0b0000000000000100
@@ -75,6 +75,17 @@
 #define MASK_UNUSED1        0b0100000000000000
 #define MASK_UNUSED2        0b1000000000000000
 
+// FGC mode bitmasks
+#define MASK_1P             MASK_X
+#define MASK_2P             MASK_Y
+#define MASK_3P             MASK_ZR
+#define MASK_4P             MASK_ZL
+#define MASK_1K             MASK_A
+#define MASK_2K             MASK_B
+#define MASK_3K             MASK_R
+#define MASK_4K             MASK_L
+
+
 // Hat
 #define HAT_NEUTRAL         -1
 #define HAT_UP              0
@@ -89,7 +100,7 @@
 // Mode masks
 #define MODE_SPLIT_DPAD     0b0001
 #define MODE_I2C_NUNCHUK    0b0010
-#define MODE_UNUSED1        0b0100
+#define MODE_FGC            0b0100
 #define MODE_UNUSED2        0b1000
 
 uint8_t mode;
@@ -178,6 +189,8 @@ int main(void)
     /* ALTERNATE MODES */
     // Bootsel
     if (gpio_get(PIN_SELECT) == 0) reset_usb_boot(0, 0);
+    // FGC Mode
+    if (gpio_get(PIN_GC_A) == 0) mode |= MODE_FGC;
     // Physical Dpad
     if (gpio_get(PIN_GC_B) == 0) mode |= MODE_SPLIT_DPAD;
     // i2c Nunchuk mode
@@ -224,52 +237,174 @@ int main(void)
 
         // Read input into appropriate struct
         // Buttons first
-        #if defined(BUTTONS_DEBUG)
-            if (buttonsCounter >= delay)
+        if (mode & MODE_FGC == 0)
+        {
+            #if defined(BUTTONS_DEBUG)
+                if (buttonsCounter >= delay)
+                {
+                    if ((report.buttons & masks[buttonsIdx]) == 0)
+                    {
+                        report.buttons |= masks[buttonsIdx];
+                    }
+                    else if ((report.buttons & masks[buttonsIdx]) >= 1)
+                    {
+                        report.buttons &= ~masks[buttonsIdx];
+
+                        if (buttonsIdx + 1 < 8) buttonsIdx++;
+                        else buttonsIdx = 0;
+                    }
+
+                    buttonsCounter = 0;
+                }
+                else buttonsCounter++;
+            #else
+                if (gpio_get(PIN_GC_B) == 0) report.buttons |= MASK_B;
+                else if (gpio_get(PIN_GC_B) >= 1) report.buttons &= ~MASK_B;
+
+                if (gpio_get(PIN_GC_A) == 0) report.buttons |= MASK_A;
+                else if (gpio_get(PIN_GC_A) >= 1) report.buttons &= ~MASK_A;
+
+                if (gpio_get(PIN_GC_Y) == 0) report.buttons |= MASK_Y;
+                else if (gpio_get(PIN_GC_Y) >= 1) report.buttons &= ~MASK_Y;
+
+                if (gpio_get(PIN_GC_X) == 0) report.buttons |= MASK_X;
+                else if (gpio_get(PIN_GC_X) >= 1) report.buttons &= ~MASK_X;
+
+                if (gpio_get(PIN_GC_L) == 0) report.buttons |= MASK_L;
+                else if (gpio_get(PIN_GC_L) >= 1)report.buttons &= ~MASK_L;
+
+                if (gpio_get(PIN_GC_R) == 0) report.buttons |= MASK_R;
+                else if (gpio_get(PIN_GC_R) >= 1) report.buttons &= ~MASK_R;
+
+                if (gpio_get(PIN_GC_ZR) == 0) report.buttons |= MASK_ZR;
+                else if (gpio_get(PIN_GC_ZR) >= 1) report.buttons &= ~MASK_ZR;
+
+                if (gpio_get(PIN_START) == 0) report.buttons |= MASK_START;
+                else if (gpio_get(PIN_START) >= 1) report.buttons &= ~MASK_START;
+
+                if (gpio_get(PIN_SELECT) == 0) report.buttons |= MASK_SELECT;
+                else if (gpio_get(PIN_SELECT) >= 1) report.buttons &= ~MASK_SELECT;
+            #endif
+
+            // C-Stick
+            #if defined(CSTICK_DEBUG)
+                static testCoords testcoords[9];
+
+                testcoords[0].y = 255;
+                testcoords[0].x = 0;
+
+                testcoords[1].y = 255;
+                testcoords[1].x = 127;
+
+                testcoords[2].y = 255;
+                testcoords[2].x = 255;
+
+                testcoords[3].y = 127;
+                testcoords[3].x = 0;
+
+                testcoords[4].y = 127;
+                testcoords[4].x = 127;
+
+                testcoords[5].y = 127;
+                testcoords[5].x = 255;
+
+                testcoords[6].y = 0;
+                testcoords[6].x = 0;
+
+                testcoords[7].y = 0;
+                testcoords[7].x = 127;
+
+                testcoords[8].y = 0;
+                testcoords[8].x = 255;
+
+                if (cstickCounter == delay)
+                {
+                    if (cstickIdx + 1 < 9) cstickIdx++;
+                    else cstickIdx = 0;
+                    cstickCounter = 0;
+                }
+                else cstickCounter++;
+
+                report.z = testcoords[cstickIdx].x;
+                report.rz = testcoords[cstickIdx].y;
+            #else
+                if ((gpio_get(PIN_GC_CUP) == 0) && (gpio_get(PIN_GC_CDOWN) == 1)) // C-Down && not C-Up
+                {
+                    report.rz = 255;
+
+                    if ((gpio_get(PIN_GC_CLEFT) == 0) && (gpio_get(PIN_GC_CRIGHT) == 1)) report.z = 0;
+                    else if ((gpio_get(PIN_GC_CLEFT) == 1) && (gpio_get(PIN_GC_CRIGHT) == 0)) report.z = 255;
+                    else report.z = 127;
+                }
+                else if ((gpio_get(PIN_GC_CUP) == 1) && (gpio_get(PIN_GC_CDOWN) == 0)) // C-Up & not C-Down
+                {
+                    report.rz = 0;
+
+                    if ((gpio_get(PIN_GC_CLEFT) == 0) && (gpio_get(PIN_GC_CRIGHT) == 1)) report.z = 0;
+                    else if ((gpio_get(PIN_GC_CLEFT) == 1) && (gpio_get(PIN_GC_CRIGHT) == 0)) report.z = 255;
+                    else report.z = 127;
+                }
+                else // Neither C-Up nor C-Down or both of them at once
+                {
+                    report.rz = 127;
+
+                    if ((gpio_get(PIN_GC_CLEFT) == 0) && (gpio_get(PIN_GC_CRIGHT) == 1)) report.z = 0;
+                    else if ((gpio_get(PIN_GC_CLEFT) == 1) && (gpio_get(PIN_GC_CRIGHT) == 0)) report.z = 255;
+                    else report.z = 127;
+                }
+            #endif
+        }
+        else
+        {
+            if (gpio_get(PIN_1P) == 0) report.buttons |= MASK_1P;
+            else if (gpio_get(PIN_1P) >= 1) report.buttons &= ~MASK_1P;
+
+            if (gpio_get(PIN_2P) == 0) report.buttons |= MASK_2P;
+            else if (gpio_get(PIN_2P) >= 1) report.buttons &= ~MASK_2P;
+
+            if (gpio_get(PIN_3P) == 0) report.buttons |= MASK_3P;
+            else if (gpio_get(PIN_3P) >= 1) report.buttons &= ~MASK_3P;
+
+            if (gpio_get(PIN_4P) == 0) report.buttons |= MASK_4P;
+            else if (gpio_get(PIN_4P) >= 1) report.buttons &= ~MASK_4P;
+
+            if (gpio_get(PIN_1K) == 0) report.buttons |= MASK_1K;
+            else if (gpio_get(PIN_1K) >= 1) report.buttons &= ~MASK_1K;
+
+            if (gpio_get(PIN_2K) == 0) report.buttons |= MASK_2K;
+            else if (gpio_get(PIN_2K) >= 1) report.buttons &= ~MASK_2K;
+
+            if (gpio_get(PIN_3K) == 0) report.buttons |= MASK_3K;
+            else if (gpio_get(PIN_3K) >= 1) report.buttons &= ~MASK_3K;
+
+            if (gpio_get(PIN_4K) == 0) report.buttons |= MASK_4K;
+            else if (gpio_get(PIN_4K) >= 1) report.buttons &= ~MASK_4K;
+
+            if ((gpio_get(PIN_START) == 0) && (gpio_get(PIN_SELECT) >= 1))
             {
-                if ((report.buttons & masks[buttonsIdx]) == 0)
-                {
-                    report.buttons |= masks[buttonsIdx];
-                }
-                else if ((report.buttons & masks[buttonsIdx]) >= 1)
-                {
-                    report.buttons &= ~masks[buttonsIdx];
-
-                    if (buttonsIdx + 1 < 8) buttonsIdx++;
-                    else buttonsIdx = 0;
-                }
-
-                buttonsCounter = 0;
+                report.buttons |= MASK_START;
+                report.buttons &= ~MASK_SELECT;
+                report.buttons &= ~MASK_HOME;
             }
-            else buttonsCounter++;
-        #else
-            if (gpio_get(PIN_1K) == 0) report.buttons |= MASK_B;
-            else if (gpio_get(PIN_1K) >= 1) report.buttons &= ~MASK_B;
-
-            if (gpio_get(PIN_GC_A) == 0) report.buttons |= MASK_A;
-            else if (gpio_get(PIN_1K) >= 1) report.buttons &= ~MASK_A;
-
-            if (gpio_get(PIN_GC_Y) == 0) report.buttons |= MASK_Y;
-            else if (gpio_get(PIN_1K) >= 1) report.buttons &= ~MASK_Y;
-
-            if (gpio_get(PIN_GC_X) == 0) report.buttons |= MASK_X;
-            else if (gpio_get(PIN_1K) >= 1) report.buttons &= ~MASK_X;
-
-            if (gpio_get(PIN_GC_L) == 0) report.buttons |= MASK_L;
-            else if (gpio_get(PIN_1K) >= 1)report.buttons &= ~MASK_L;
-
-            if (gpio_get(PIN_GC_R) == 0) report.buttons |= MASK_R;
-            else if (gpio_get(PIN_1K) >= 1) report.buttons &= ~MASK_R;
-
-            if (gpio_get(PIN_GC_ZR) == 0) report.buttons |= MASK_ZR;
-            else if (gpio_get(PIN_1K) >= 1) report.buttons &= ~MASK_ZR;
-
-            if (gpio_get(PIN_START) == 0) report.buttons |= MASK_START;
-            else if (gpio_get(PIN_1K) >= 1) report.buttons &= ~MASK_START;
-
-            if (gpio_get(PIN_SELECT) == 0) report.buttons |= MASK_SELECT;
-            else if (gpio_get(PIN_1K) >= 1) report.buttons &= ~MASK_SELECT;
-        #endif
+            else if ((gpio_get(PIN_START) >= 1) && (gpio_get(PIN_SELECT) == 0))
+            {
+                report.buttons &= ~MASK_START;
+                report.buttons |= MASK_SELECT;
+                report.buttons &= ~MASK_HOME;
+            }
+            else if ((gpio_get(PIN_START) >= 1) && (gpio_get(PIN_SELECT) >= 1))
+            {
+                report.buttons &= ~MASK_START;
+                report.buttons &= ~MASK_SELECT;
+                report.buttons |= MASK_HOME;
+            }
+            else
+            {
+                report.buttons &= ~MASK_START;
+                report.buttons &= ~MASK_SELECT;
+                report.buttons &= ~MASK_HOME;
+            }
+        }
 
         // Handling the left stick
         if (mode &= MODE_SPLIT_DPAD)
@@ -466,74 +601,6 @@ int main(void)
                 #endif
             }
         }
-
-        // C-Stick
-        #if defined(CSTICK_DEBUG)
-            static testCoords testcoords[9];
-
-            testcoords[0].y = 255;
-            testcoords[0].x = 0;
-
-            testcoords[1].y = 255;
-            testcoords[1].x = 127;
-
-            testcoords[2].y = 255;
-            testcoords[2].x = 255;
-
-            testcoords[3].y = 127;
-            testcoords[3].x = 0;
-
-            testcoords[4].y = 127;
-            testcoords[4].x = 127;
-
-            testcoords[5].y = 127;
-            testcoords[5].x = 255;
-
-            testcoords[6].y = 0;
-            testcoords[6].x = 0;
-
-            testcoords[7].y = 0;
-            testcoords[7].x = 127;
-
-            testcoords[8].y = 0;
-            testcoords[8].x = 255;
-
-            if (cstickCounter == delay)
-            {
-                if (cstickIdx + 1 < 9) cstickIdx++;
-                else cstickIdx = 0;
-                cstickCounter = 0;
-            }
-            else cstickCounter++;
-
-            report.z = testcoords[cstickIdx].x;
-            report.rz = testcoords[cstickIdx].y;
-        #else
-            if ((gpio_get(PIN_GC_CUP) == 0) && (gpio_get(PIN_GC_CDOWN) == 1)) // C-Down && not C-Up
-            {
-                report.rz = 255;
-
-                if ((gpio_get(PIN_GC_CLEFT) == 0) && (gpio_get(PIN_GC_CRIGHT) == 1)) report.z = 0;
-                else if ((gpio_get(PIN_GC_CLEFT) == 1) && (gpio_get(PIN_GC_CRIGHT) == 0)) report.z = 255;
-                else report.z = 127;
-            }
-            else if ((gpio_get(PIN_GC_CUP) == 1) && (gpio_get(PIN_GC_CDOWN) == 0)) // C-Up & not C-Down
-            {
-                report.rz = 0;
-
-                if ((gpio_get(PIN_GC_CLEFT) == 0) && (gpio_get(PIN_GC_CRIGHT) == 1)) report.z = 0;
-                else if ((gpio_get(PIN_GC_CLEFT) == 1) && (gpio_get(PIN_GC_CRIGHT) == 0)) report.z = 255;
-                else report.z = 127;
-            }
-            else // Neither C-Up nor C-Down or both of them at once
-            {
-                report.rz = 127;
-
-                if ((gpio_get(PIN_GC_CLEFT) == 0) && (gpio_get(PIN_GC_CRIGHT) == 1)) report.z = 0;
-                else if ((gpio_get(PIN_GC_CLEFT) == 1) && (gpio_get(PIN_GC_CRIGHT) == 0)) report.z = 255;
-                else report.z = 127;
-            }
-        #endif
 
         // Pack into the relevant structs and send to host
         hid_task(report);
