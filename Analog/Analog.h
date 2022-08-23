@@ -23,15 +23,16 @@
 /* Axis struct */
 typedef struct {
     // Defines a 1-dimensional axis
-    uint8_t channel;
-    uint16_t center;
-    uint16_t offset;
-    uint16_t minimum;
-    uint16_t maximum;
-    uint16_t* sampleArray;
+    int8_t channel;
+    int16_t filtered;
+    int16_t center;
+    int16_t offset;
+    int16_t minimum;
+    int16_t maximum;
+    int16_t* sampleArray;
 } Axis;
 
-uint16_t axisGetValue(Axis* self);
+int16_t axisGetValue(Axis* self);
 
 /* Polar coordinates struct */
 typedef struct {
@@ -51,8 +52,8 @@ void convertToPolar(PolarSystem* self, int16_t x, int16_t y);
 typedef struct {
     Axis _x;
     Axis _y;
-    int16_t x;
-    int16_t y;
+    uint8_t x;
+    uint8_t y;
     PolarSystem polar;
 } Coordinates;
 

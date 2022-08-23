@@ -58,16 +58,16 @@
 #define ADC_B               2
 
 // Switch bitmasks
-#define MASK_B              0b0000000000000001
-#define MASK_A              0b0000000000000010
-#define MASK_Y              0b0000000000000100
+#define MASK_Y              0b0000000000000001
+#define MASK_B              0b0000000000000010
+#define MASK_A              0b0000000000000100
 #define MASK_X              0b0000000000001000
 #define MASK_L              0b0000000000010000
 #define MASK_R              0b0000000000100000
-#define MASK_ZL             0b0000000001000000  // Unused
+#define MASK_ZL             0b0000000001000000
 #define MASK_ZR             0b0000000010000000
-#define MASK_START          0b0000000100000000
-#define MASK_SELECT         0b0000001000000000
+#define MASK_SELECT         0b0000000100000000
+#define MASK_START          0b0000001000000000
 #define MASK_L3             0b0000010000000000  // Unused
 #define MASK_R3             0b0000100000000000  // Unused
 #define MASK_HOME           0b0001000000000000
@@ -165,7 +165,7 @@ int main(void)
     /* Setup block */
     stdio_init_all();
     mode = 0;
-    leverLock = 1;
+    leverLock = 0;
 
     // Init GPIO
     for (int i = 0; i < 16; i++)
@@ -220,11 +220,6 @@ int main(void)
     {
         haltCatchFire("Error initializing coordinates struct !", retval);
     }
-    adc_select_input(0);
-    coords._x.offset = coords._x.center - adc_read();
-
-    adc_select_input(1);
-    coords._y.offset = coords._y.center - adc_read();
 
     // Init USB
     board_init();
@@ -237,8 +232,8 @@ int main(void)
 
         // Read input into appropriate struct
         // Buttons first
-        if (mode & MODE_FGC == 0)
-        {
+        //if (mode & MODE_FGC == 0)
+        //{
             #if defined(BUTTONS_DEBUG)
                 if (buttonsCounter >= delay)
                 {
@@ -282,8 +277,8 @@ int main(void)
                 if (gpio_get(PIN_START) == 0) report.buttons |= MASK_START;
                 else if (gpio_get(PIN_START) >= 1) report.buttons &= ~MASK_START;
 
-                if (gpio_get(PIN_SELECT) == 0) report.buttons |= MASK_SELECT;
-                else if (gpio_get(PIN_SELECT) >= 1) report.buttons &= ~MASK_SELECT;
+                //if (gpio_get(PIN_SELECT) == 0) report.buttons |= MASK_SELECT;
+                //else if (gpio_get(PIN_SELECT) >= 1) report.buttons &= ~MASK_SELECT;
             #endif
 
             // C-Stick
@@ -330,7 +325,7 @@ int main(void)
             #else
                 if ((gpio_get(PIN_GC_CUP) == 0) && (gpio_get(PIN_GC_CDOWN) == 1)) // C-Down && not C-Up
                 {
-                    report.rz = 255;
+                    report.rz = 0;
 
                     if ((gpio_get(PIN_GC_CLEFT) == 0) && (gpio_get(PIN_GC_CRIGHT) == 1)) report.z = 0;
                     else if ((gpio_get(PIN_GC_CLEFT) == 1) && (gpio_get(PIN_GC_CRIGHT) == 0)) report.z = 255;
@@ -338,7 +333,7 @@ int main(void)
                 }
                 else if ((gpio_get(PIN_GC_CUP) == 1) && (gpio_get(PIN_GC_CDOWN) == 0)) // C-Up & not C-Down
                 {
-                    report.rz = 0;
+                    report.rz = 255;
 
                     if ((gpio_get(PIN_GC_CLEFT) == 0) && (gpio_get(PIN_GC_CRIGHT) == 1)) report.z = 0;
                     else if ((gpio_get(PIN_GC_CLEFT) == 1) && (gpio_get(PIN_GC_CRIGHT) == 0)) report.z = 255;
@@ -353,8 +348,8 @@ int main(void)
                     else report.z = 127;
                 }
             #endif
-        }
-        else
+        //}
+        /*else
         {
             if (gpio_get(PIN_1P) == 0) report.buttons |= MASK_1P;
             else if (gpio_get(PIN_1P) >= 1) report.buttons &= ~MASK_1P;
@@ -404,7 +399,7 @@ int main(void)
                 report.buttons &= ~MASK_SELECT;
                 report.buttons &= ~MASK_HOME;
             }
-        }
+        }*/
 
         // Handling the left stick
         if (mode &= MODE_SPLIT_DPAD)
@@ -575,7 +570,7 @@ int main(void)
                     else if ((mode & MODE_I2C_NUNCHUK) == 0)
                     {
                         // Lock the lever reading until actuation
-                        if (leverLock)
+                        if (leverLock == 1)
                         {
                             if ((coords.x != 127) || (coords.y != 127))
                             {
