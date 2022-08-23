@@ -40,6 +40,7 @@ typedef struct {
     uint16_t r;
     uint16_t rmax;
     uint16_t dzThreshhold;
+    uint16_t dpadThreshhold;
     uint16_t rdzThreshhold;
     double theta;
     double deg;

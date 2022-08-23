@@ -97,13 +97,10 @@
 #define HAT_LEFT            6
 #define HAT_UP_LEFT         7
 
-// Mode masks
-#define MODE_SPLIT_DPAD     0b0001
-#define MODE_I2C_NUNCHUK    0b0010
-#define MODE_FGC            0b0100
-#define MODE_UNUSED2        0b1000
-
-uint8_t mode;
+// Modes
+uint8_t mode_splitDpad;
+uint8_t mode_i2c_Nunchuk;
+uint8_t mode_fgc;
 
 // Debug stuff
 int retval; // Old reliable !
@@ -164,7 +161,10 @@ int main(void)
 {  
     /* Setup block */
     stdio_init_all();
-    mode = 0;
+    mode_splitDpad = 0;
+    mode_i2c_Nunchuk = 0;
+    mode_fgc = 0;
+
     leverLock = 0;
 
     // Init GPIO
@@ -190,13 +190,13 @@ int main(void)
     // Bootsel
     if (gpio_get(PIN_SELECT) == 0) reset_usb_boot(0, 0);
     // FGC Mode
-    if (gpio_get(PIN_GC_A) == 0) mode |= MODE_FGC;
+    if (gpio_get(PIN_GC_A) == 0) mode_fgc = 1;
     // Physical Dpad
-    if (gpio_get(PIN_GC_B) == 0) mode |= MODE_SPLIT_DPAD;
+    if (gpio_get(PIN_GC_B) == 0) mode_splitDpad = 1;
     // i2c Nunchuk mode
     if (gpio_get(PIN_START) == 0)
     {
-        mode |= MODE_I2C_NUNCHUK;
+        mode_i2c_Nunchuk = 1;
 
         i2c_init(i2c0, 100 * 1000); // Init i2c @ 100KHz
 
@@ -225,6 +225,14 @@ int main(void)
     board_init();
     tusb_init();
 
+    // Init report struct
+    report.x = 127;
+    report.y = 127;
+    report.z = 127;
+    report.rz = 127;
+    report.hat = -1;
+    report.buttons = 0;
+
     /* Loop block */
     while (1)
     {
@@ -232,8 +240,8 @@ int main(void)
 
         // Read input into appropriate struct
         // Buttons first
-        //if (mode & MODE_FGC == 0)
-        //{
+        if (mode_fgc == 0)
+        {
             #if defined(BUTTONS_DEBUG)
                 if (buttonsCounter >= delay)
                 {
@@ -276,9 +284,6 @@ int main(void)
 
                 if (gpio_get(PIN_START) == 0) report.buttons |= MASK_START;
                 else if (gpio_get(PIN_START) >= 1) report.buttons &= ~MASK_START;
-
-                //if (gpio_get(PIN_SELECT) == 0) report.buttons |= MASK_SELECT;
-                //else if (gpio_get(PIN_SELECT) >= 1) report.buttons &= ~MASK_SELECT;
             #endif
 
             // C-Stick
@@ -348,61 +353,56 @@ int main(void)
                     else report.z = 127;
                 }
             #endif
-        //}
-        /*else
+        }
+        else if (mode_fgc == 1)
         {
-            if (gpio_get(PIN_1P) == 0) report.buttons |= MASK_1P;
-            else if (gpio_get(PIN_1P) >= 1) report.buttons &= ~MASK_1P;
+            if (gpio_get(PIN_GC_CLEFT) == 0) report.buttons |= MASK_1P;
+            else if (gpio_get(PIN_GC_CLEFT) >= 1) report.buttons &= ~MASK_1P;
 
-            if (gpio_get(PIN_2P) == 0) report.buttons |= MASK_2P;
-            else if (gpio_get(PIN_2P) >= 1) report.buttons &= ~MASK_2P;
+            if (gpio_get(PIN_GC_CUP) == 0) report.buttons |= MASK_2P;
+            else if (gpio_get(PIN_GC_CUP) >= 1) report.buttons &= ~MASK_2P;
 
-            if (gpio_get(PIN_3P) == 0) report.buttons |= MASK_3P;
-            else if (gpio_get(PIN_3P) >= 1) report.buttons &= ~MASK_3P;
+            if (gpio_get(PIN_GC_CRIGHT) == 0) report.buttons |= MASK_3P;
+            else if (gpio_get(PIN_GC_CRIGHT) >= 1) report.buttons &= ~MASK_3P;
 
-            if (gpio_get(PIN_4P) == 0) report.buttons |= MASK_4P;
-            else if (gpio_get(PIN_4P) >= 1) report.buttons &= ~MASK_4P;
+            if (gpio_get(PIN_GC_Y) == 0) report.buttons |= MASK_4P;
+            else if (gpio_get(PIN_GC_Y) >= 1) report.buttons &= ~MASK_4P;
 
-            if (gpio_get(PIN_1K) == 0) report.buttons |= MASK_1K;
-            else if (gpio_get(PIN_1K) >= 1) report.buttons &= ~MASK_1K;
+            if (gpio_get(PIN_GC_B) == 0) report.buttons |= MASK_1K;
+            else if (gpio_get(PIN_GC_B) >= 1) report.buttons &= ~MASK_1K;
 
-            if (gpio_get(PIN_2K) == 0) report.buttons |= MASK_2K;
-            else if (gpio_get(PIN_2K) >= 1) report.buttons &= ~MASK_2K;
+            if (gpio_get(PIN_GC_X) == 0) report.buttons |= MASK_2K;
+            else if (gpio_get(PIN_GC_X) >= 1) report.buttons &= ~MASK_2K;
 
-            if (gpio_get(PIN_3K) == 0) report.buttons |= MASK_3K;
-            else if (gpio_get(PIN_3K) >= 1) report.buttons &= ~MASK_3K;
+            if (gpio_get(PIN_GC_ZR) == 0) report.buttons |= MASK_3K;
+            else if (gpio_get(PIN_GC_ZR) >= 1) report.buttons &= ~MASK_3K;
 
-            if (gpio_get(PIN_4K) == 0) report.buttons |= MASK_4K;
-            else if (gpio_get(PIN_4K) >= 1) report.buttons &= ~MASK_4K;
+            if (gpio_get(PIN_GC_R) == 0) report.buttons |= MASK_4K;
+            else if (gpio_get(PIN_GC_R) >= 1) report.buttons &= ~MASK_4K;
 
-            if ((gpio_get(PIN_START) == 0) && (gpio_get(PIN_SELECT) >= 1))
+            if ((gpio_get(PIN_START) == 0) && (gpio_get(PIN_SELECT) == 0))
             {
-                report.buttons |= MASK_START;
-                report.buttons &= ~MASK_SELECT;
-                report.buttons &= ~MASK_HOME;
-            }
-            else if ((gpio_get(PIN_START) >= 1) && (gpio_get(PIN_SELECT) == 0))
-            {
-                report.buttons &= ~MASK_START;
-                report.buttons |= MASK_SELECT;
-                report.buttons &= ~MASK_HOME;
-            }
-            else if ((gpio_get(PIN_START) >= 1) && (gpio_get(PIN_SELECT) >= 1))
-            {
-                report.buttons &= ~MASK_START;
-                report.buttons &= ~MASK_SELECT;
                 report.buttons |= MASK_HOME;
+                report.buttons &= ~MASK_START;
+                report.buttons &= ~MASK_SELECT;
             }
             else
             {
-                report.buttons &= ~MASK_START;
-                report.buttons &= ~MASK_SELECT;
                 report.buttons &= ~MASK_HOME;
+
+                if (gpio_get(PIN_START) == 0) report.buttons |= MASK_START;
+                else if (gpio_get(PIN_START) >= 1) report.buttons &= ~MASK_START;
+
+                if (gpio_get(PIN_SELECT) == 0) report.buttons |= MASK_SELECT;
+                else if (gpio_get(PIN_SELECT) >= 1) report.buttons &= ~MASK_SELECT;
             }
-        }*/
+
+            report.z = 127;
+            report.rz = 127;
+        }
 
         // Handling the left stick
-        if (mode &= MODE_SPLIT_DPAD)
+        if (mode_splitDpad == 1)
         {
             report.x = 127;
             report.y = 127;
@@ -449,6 +449,8 @@ int main(void)
                     }
                     else hatCounter++;
                 #else
+                if (coords.polar.r >= coords.polar.dpadThreshhold)
+                {
                     if (((coords.polar.deg > 337.5) && (coords.polar.deg < 360)) || ((coords.polar.deg >= 0) && (coords.polar.deg < 22.5))) report.hat = HAT_LEFT;
                     else if ((coords.polar.deg >= 22.5) && (coords.polar.deg < 67.5)) report.hat = HAT_UP_LEFT;
                     else if ((coords.polar.deg >= 67.5) && (coords.polar.deg < 112.5)) report.hat = HAT_UP;
@@ -458,6 +460,8 @@ int main(void)
                     else if ((coords.polar.deg >= 247.5) && (coords.polar.deg < 292.5)) report.hat = HAT_DOWN;
                     else if ((coords.polar.deg >= 292.5) && (coords.polar.deg < 337.5)) report.hat = HAT_DOWN_LEFT;
                     else report.hat = HAT_NEUTRAL;
+                }
+                else report.hat = HAT_NEUTRAL;
                 #endif
             }
             else
@@ -506,7 +510,7 @@ int main(void)
                     report.x = testcoords[analogIdx].x;
                     report.y = testcoords[analogIdx].y;
                 #else
-                    if ((mode & MODE_I2C_NUNCHUK) == 1)
+                    if (mode_i2c_Nunchuk == 1)
                     {
                         static int retval;
                         retval = readNunchuk(i2c, i2cDataBuf);
@@ -567,7 +571,7 @@ int main(void)
 
                         // TODO: Z && C ?
                     }
-                    else if ((mode & MODE_I2C_NUNCHUK) == 0)
+                    else if (mode_i2c_Nunchuk == 0)
                     {
                         // Lock the lever reading until actuation
                         if (leverLock == 1)

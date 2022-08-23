@@ -3,7 +3,7 @@
 
 #define PI                  3.1416
 #define NUMBER_OF_SAMPLES   10
-#define DEADZONE            10
+#define DEADZONE            12
 #define REVERSE_DEADZONE    60
 
 long map(long x, long in_min, long in_max, long out_min, long out_max)
@@ -98,6 +98,7 @@ int16_t initCoordsStruct(Coordinates* self)
     self->polar.rmax = getRMax(127, 0);
     self->polar.dzThreshhold = (self->polar.rmax * DEADZONE) / 100;
     self->polar.rdzThreshhold = (self->polar.rmax * REVERSE_DEADZONE) / 100;
+    self->polar.dpadThreshhold = 3 * self->polar.dzThreshhold;
 
     return 0;
 }
