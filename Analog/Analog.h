@@ -37,11 +37,15 @@ uint16_t axisGetValue(Axis* self);
 typedef struct {
     // Defines a polar coordinates system
     uint16_t r;
+    uint16_t rmax;
+    uint16_t dzThreshhold;
+    uint16_t rdzThreshhold;
     double theta;
     double deg;
 } PolarSystem;
 
-void convertToPolar(PolarSystem* self, uint16_t x, uint16_t y);
+uint16_t getRMax(int16_t x, int16_t y);
+void convertToPolar(PolarSystem* self, int16_t x, int16_t y);
 
 /* Coordinates struct */
 typedef struct {

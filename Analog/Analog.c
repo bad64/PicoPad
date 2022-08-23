@@ -32,7 +32,12 @@ uint16_t axisGetValue(Axis* self)
     return averageBuf / NUMBER_OF_SAMPLES;
 }
 
-void convertToPolar(PolarSystem* self, uint16_t x, uint16_t y)
+uint16_t getRMax(int16_t x, int16_t y)
+{
+    return sqrt( pow(x, 2) + pow(y, 2) );
+}
+
+void convertToPolar(PolarSystem* self, int16_t x, int16_t y)
 {
     self->r = sqrt( pow(x, 2) + pow(y, 2) );
     self->theta = atan2(y, x);
@@ -83,33 +88,38 @@ int16_t initCoordsStruct(Coordinates* self)
     self->_y.sampleArray = (uint16_t*)malloc(sizeof(uint16_t) * NUMBER_OF_SAMPLES);
     if (self->_y.sampleArray == NULL) return -2;
 
+    // Set polar thressholds
+    self->polar.rmax = getRMax(self->_x.maximum, self->_y.maximum);
+    self->polar.dzThreshhold = (self->polar.rmax * DEADZONE) / 100;
+    self->polar.rdzThreshhold = (self->polar.rmax * REVERSE_DEADZONE) / 100;
+
     return 0;
 }
 
 int16_t updateCoordinates(Coordinates* self)
 {
-    static int16_t xbuf, ybuf;
+    int16_t xbuf, ybuf;
 
-    xbuf = axisGetValue(&self->_x) - self->_x.center;
-    ybuf = axisGetValue(&self->_y) - self->_y.center;
+    xbuf = axisGetValue(&self->_x) - (self->_x.center + self->_x.offset);
+    ybuf = axisGetValue(&self->_y) - (self->_y.center + self->_y.offset);
 
     convertToPolar(&self->polar, xbuf, ybuf);
 
     // TODO: only map at the end of this function
 
-    if (self->polar.r < DEADZONE)
+    if (self->polar.r < self->polar.dzThreshhold)
     {
         xbuf = 0;
         ybuf = 0;
     }
-    else if (self->polar.r > REVERSE_DEADZONE)
+    else if (self->polar.r > self->polar.rdzThreshhold)
     {
-        self->polar.r = 127;    // Max theoretical absolute value of x and y
+        self->polar.r = self->polar.rmax;
     }
 
     // Update values
-    self->x = self->polar.r * cos(self->polar.theta);
-    self->y = self->polar.r * sin(self->polar.theta);
+    self->x = map(self->polar.r * cos(self->polar.theta), self->_x.minimum, self->_x.maximum, 0, 255);
+    self->y = map(self->polar.r * sin(self->polar.theta), self->_y.minimum, self->_y.maximum, 0, 255);
 
     // Boundary checking, values must not wrap around an uint8_t
     if (self->x <= 0) self->x = 0;
@@ -117,9 +127,6 @@ int16_t updateCoordinates(Coordinates* self)
 
     if (self->y <= 0) self->y = 0;
     else if (self->y >= 255) self->y = 255;
-
-    // Re-convert with corrected values so theta && deg make sense
-    convertToPolar(&self->polar, self->x - 127, self->y - 127);
 
     return 0;
 }
