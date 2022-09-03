@@ -76,14 +76,14 @@
 #define MASK_UNUSED2        0b1000000000000000
 
 // FGC mode bitmasks
-#define MASK_1P             MASK_X
-#define MASK_2P             MASK_Y
-#define MASK_3P             MASK_ZR
-#define MASK_4P             MASK_ZL
-#define MASK_1K             MASK_A
-#define MASK_2K             MASK_B
-#define MASK_3K             MASK_R
-#define MASK_4K             MASK_L
+#define MASK_1P             MASK_Y
+#define MASK_2P             MASK_X
+#define MASK_3P             MASK_R
+#define MASK_4P             MASK_L
+#define MASK_1K             MASK_B
+#define MASK_2K             MASK_A
+#define MASK_3K             MASK_ZR
+#define MASK_4K             MASK_ZL
 
 
 // Hat
@@ -114,6 +114,7 @@ void haltCatchFire(const char* msg, int errcode)
 //#define BUTTONS_DEBUG
 //#define HAT_DEBUG
 //#define ANALOG_DEBUG
+#define I2C_DEBUG
 //#define CSTICK_DEBUG
 
 #if defined(BUTTONS_DEBUG) || defined(HAT_DEBUG) || defined(ANALOG_DEBUG) || defined(CSTICK_DEBUG)
@@ -154,8 +155,9 @@ pokken_controller_report_t report;
 Coordinates coords;
 int leverLock;
 
-i2c_inst_t* i2c;
+I2C_STATE i2cState;
 uint8_t i2cDataBuf[6];
+uint8_t i2cWatchdog;
 
 int main(void)
 {  
@@ -194,8 +196,19 @@ int main(void)
     // Physical Dpad
     if (gpio_get(PIN_GC_B) == 0) mode_splitDpad = 1;
     // i2c Nunchuk mode
-    if (gpio_get(PIN_START) == 0)
-    {
+    #if !defined(I2C_DEBUG)     // If the debug parameter isn't defined, default to polling START at boot
+        if (gpio_get(PIN_START) == 0)
+        {
+            mode_i2c_Nunchuk = 1;
+
+            i2c_init(i2c0, 100 * 1000); // Init i2c @ 100KHz
+
+            gpio_set_function(PIN_SDA, GPIO_FUNC_I2C);
+            gpio_set_function(PIN_SCL, GPIO_FUNC_I2C);
+            gpio_pull_up(PIN_SDA);
+            gpio_pull_up(PIN_SCL);
+        }
+    #else
         mode_i2c_Nunchuk = 1;
 
         i2c_init(i2c0, 100 * 1000); // Init i2c @ 100KHz
@@ -204,9 +217,7 @@ int main(void)
         gpio_set_function(PIN_SCL, GPIO_FUNC_I2C);
         gpio_pull_up(PIN_SDA);
         gpio_pull_up(PIN_SCL);
-
-        initNunchuk(i2c0);
-    }
+    #endif
 
     // Init analog pins
     adc_init();
@@ -512,64 +523,22 @@ int main(void)
                 #else
                     if (mode_i2c_Nunchuk == 1)
                     {
-                        static int retval;
-                        retval = readNunchuk(i2c, i2cDataBuf);
-                        if (retval == 0)
+                        i2cWatchdog = i2cStateMachine(i2cState, i2cDataBuf);
+
+                        if (i2cWatchdog == PICO_ERROR_GENERIC)
+                        {
+                            report.x = 255;
+                            report.y = 255;
+                        }
+                        else if (i2cWatchdog == PICO_ERROR_TIMEOUT)
+                        {
+                            reset_usb_boot(0, 0);
+                        }
+                        else
                         {
                             report.x = i2cDataBuf[0];
                             report.y = i2cDataBuf[1];
                         }
-                        else
-                        {
-                            // How to define error codes without UART or a pin-controlled LED 101
-                            retval = retval * -1;
-                            switch (retval)
-                            {
-                                case 1:
-                                    report.x = 0;
-                                    report.y = 0;
-                                    break;
-                                case 2:
-                                    report.x = 127;
-                                    report.y = 0;
-                                    break;
-                                case 3:
-                                    report.x = 255;
-                                    report.y = 0;
-                                    break;
-                                case 4:
-                                    report.x = 0;
-                                    report.y = 127;
-                                    break;
-                                case 5:
-                                    // Might want to not use that one
-                                    report.x = 127;
-                                    report.y = 127;
-                                    break;
-                                case 6:
-                                    report.x = 255;
-                                    report.y = 127;
-                                    break;
-                                case 7:
-                                    report.x = 0;
-                                    report.y = 255;
-                                    break;
-                                case 8:
-                                    report.x = 127;
-                                    report.y = 255;
-                                    break;
-                                case 9:
-                                    report.x = 255;
-                                    report.y = 255;
-                                    break;
-                                default:
-                                    report.x = 191;
-                                    report.y = 191;
-                                    break;
-                            }
-                        }
-
-                        // TODO: Z && C ?
                     }
                     else if (mode_i2c_Nunchuk == 0)
                     {
