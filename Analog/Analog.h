@@ -13,8 +13,8 @@
 *****************************************************/
 
 // Lever selection compile-time defines
-#define LEVER_JLM
-//#define LEVER_U360
+//#define LEVER_JLM
+#define LEVER_U360
 
 #if !defined(LEVER_JLM) && !defined(LEVER_U360)
     #error "You need to define either lever in Analog.h"

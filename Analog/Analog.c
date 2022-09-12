@@ -3,7 +3,7 @@
 
 #define PI                  3.1416
 #define NUMBER_OF_SAMPLES   10
-#define DEADZONE            12
+#define DEADZONE            18
 #define REVERSE_DEADZONE    60
 
 long map(long x, long in_min, long in_max, long out_min, long out_max)
@@ -49,18 +49,19 @@ int16_t initCoordsStruct(Coordinates* self)
     /* X axis */
     int16_t xbuf;
     self->_x.channel = 0;
-    self->_x.center = 2048;
 
     #if defined(LEVER_JLM)
         // Empirical values; will need to be adjusted on a case by case basis
+        self->_x.center = 2048;
         self->_x.minimum = 1348;
         self->_x.maximum = 2748;
     #endif
 
     #if defined(LEVER_U360)
         // Ditto
-        self->_x.minimum = self->_x.center - 360;
-        self->_x.maximum = self->_x.center + 360;
+        self->_x.center = 1580;
+        self->_x.minimum = 90;
+        self->_x.maximum = 2865;
     #endif
 
     adc_select_input(self->_x.channel);
@@ -73,18 +74,19 @@ int16_t initCoordsStruct(Coordinates* self)
     /* Y axis */
     int16_t ybuf;
     self->_y.channel = 1;
-    self->_y.center = 2048;
 
     #if defined(LEVER_JLM)
         // Same as above
+        self->_y.center = 2048;
         self->_y.minimum = 1348;
         self->_y.maximum = 2748;
     #endif
 
     #if defined(LEVER_U360)
         // Also here
-        self->_y.minimum = self->_y.center - 360;
-        self->_y.maximum = self->_y.center + 360;
+        self->_y.center = 1720;
+        self->_y.minimum = 264;
+        self->_y.maximum = 2940;
     #endif
 
     adc_select_input(self->_y.channel);
@@ -132,7 +134,13 @@ int16_t updateCoordinates(Coordinates* self)
     if (self->x < 1) self->x = 0;
     else if (self->x > 254) self->x = 255;
 
-    self->y = map(ybuf, -127, 127, 0, 255);
+    #if defined(LEVER_JLM)
+        self->y = map(ybuf, -127, 127, 0, 255);
+    #endif
+    #if defined(LEVER_U360)
+        self->y = map(ybuf, 127, -127, 0, 255);
+    #endif
+
     if (self->y < 1) self->y = 0;
     else if (self->y > 254) self->y = 255;
 

@@ -85,7 +85,6 @@
 #define MASK_3K             MASK_ZR
 #define MASK_4K             MASK_ZL
 
-
 // Hat
 #define HAT_NEUTRAL         -1
 #define HAT_UP              0
@@ -114,7 +113,7 @@ void haltCatchFire(const char* msg, int errcode)
 //#define BUTTONS_DEBUG
 //#define HAT_DEBUG
 //#define ANALOG_DEBUG
-#define I2C_DEBUG
+//#define I2C_DEBUG
 //#define CSTICK_DEBUG
 
 #if defined(BUTTONS_DEBUG) || defined(HAT_DEBUG) || defined(ANALOG_DEBUG) || defined(CSTICK_DEBUG)
@@ -523,7 +522,7 @@ int main(void)
                 #else
                     if (mode_i2c_Nunchuk == 1)
                     {
-                        i2cWatchdog = i2cStateMachine(i2cState, i2cDataBuf);
+                        i2cWatchdog = i2cStateMachine(&i2cState, i2cDataBuf);
 
                         if (i2cWatchdog == PICO_ERROR_GENERIC)
                         {
