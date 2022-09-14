@@ -30,6 +30,7 @@ typedef struct {
     int16_t minimum;
     int16_t maximum;
     int16_t* sampleArray;
+    uint8_t calibrated;
 } Axis;
 
 int16_t axisGetValue(Axis* self);

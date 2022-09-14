@@ -3,8 +3,16 @@
 
 #define PI                  3.1416
 #define NUMBER_OF_SAMPLES   10
-#define DEADZONE            18
-#define REVERSE_DEADZONE    60
+
+// You may want to change these to suit your personal preferences
+#if defined(LEVER_JLM)
+    #define DEADZONE            12
+    #define REVERSE_DEADZONE    60
+#endif
+#if defined(LEVER_U360)
+    #define DEADZONE            15
+    #define REVERSE_DEADZONE    70
+#endif
 
 long map(long x, long in_min, long in_max, long out_min, long out_max)
 {
@@ -17,7 +25,7 @@ int16_t axisGetValue(Axis* self)
     adc_select_input(self->channel);
     for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
     {
-        self->sampleArray[i] = adc_read() + self->offset;
+        self->sampleArray[i] = adc_read();
         if (self->sampleArray[i] <= self->minimum) self->sampleArray[i] = self->minimum;
         else if (self->sampleArray[i] >= self->maximum) self->sampleArray[i] = self->maximum;
     }
@@ -46,6 +54,9 @@ void convertToPolar(PolarSystem* self, int16_t x, int16_t y)
 
 int16_t initCoordsStruct(Coordinates* self)
 {
+    self->_x.calibrated = 0;
+    self->_y.calibrated = 0;
+
     /* X axis */
     int16_t xbuf;
     self->_x.channel = 0;
@@ -64,12 +75,10 @@ int16_t initCoordsStruct(Coordinates* self)
         self->_x.maximum = 2865;
     #endif
 
-    adc_select_input(self->_x.channel);
-    xbuf = adc_read();
-    self->_x.offset = self->_x.center - xbuf;
-
     self->_x.sampleArray = (uint16_t*)malloc(sizeof(uint16_t) * NUMBER_OF_SAMPLES);
     if (self->_x.sampleArray == NULL) return -1;
+
+    self->_x.offset = 0;
 
     /* Y axis */
     int16_t ybuf;
@@ -89,12 +98,10 @@ int16_t initCoordsStruct(Coordinates* self)
         self->_y.maximum = 2940;
     #endif
 
-    adc_select_input(self->_y.channel);
-    ybuf = adc_read();
-    self->_y.offset = self->_y.center - ybuf;
-
     self->_y.sampleArray = (uint16_t*)malloc(sizeof(uint16_t) * NUMBER_OF_SAMPLES);
     if (self->_y.sampleArray == NULL) return -2;
+
+    self->_y.offset = 0;
 
     // Set polar thressholds
     self->polar.rmax = getRMax(127, 0);
@@ -112,8 +119,14 @@ int16_t updateCoordinates(Coordinates* self)
     xbuf = axisGetValue(&self->_x);
     ybuf = axisGetValue(&self->_y);
 
-    xbuf = map(xbuf, self->_x.minimum, self->_x.maximum, -127, 127);
-    ybuf = map(ybuf, self->_y.minimum, self->_y.maximum, 127, -127);
+    xbuf = map(xbuf, self->_x.minimum, self->_x.maximum, -127, 127) + self->_x.offset;
+    #if defined(LEVER_JLM)
+        ybuf = map(ybuf, self->_y.minimum, self->_y.maximum, 127, -127) + self->_y.offset;
+    #endif
+    #if defined(LEVER_U360)
+        // U360 has a reversed Y-axis
+        ybuf = map(ybuf, self->_y.minimum, self->_y.maximum, 127, -127) - self->_y.offset;
+    #endif
 
     convertToPolar(&self->polar, xbuf, ybuf);
 
@@ -131,6 +144,7 @@ int16_t updateCoordinates(Coordinates* self)
 
     // Update values
     self->x = map(xbuf, -127, 127, 0, 255);
+    
     if (self->x < 1) self->x = 0;
     else if (self->x > 254) self->x = 255;
 
@@ -143,6 +157,18 @@ int16_t updateCoordinates(Coordinates* self)
 
     if (self->y < 1) self->y = 0;
     else if (self->y > 254) self->y = 255;
+
+    if (self->_x.calibrated == 0)
+    {
+        self->_x.offset = 127 - self->x;
+        self->_x.calibrated = 1;
+    }
+
+    if (self->_y.calibrated == 0)
+    {
+        self->_y.offset = 127 - self->y;
+        self->_y.calibrated = 1;
+    }
 
     return 0;
 }
