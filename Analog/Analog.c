@@ -11,7 +11,7 @@
 #endif
 #if defined(LEVER_U360)
     #define DEADZONE            15
-    #define REVERSE_DEADZONE    70
+    #define REVERSE_DEADZONE    85
 #endif
 
 long map(long x, long in_min, long in_max, long out_min, long out_max)
@@ -62,7 +62,7 @@ int16_t initCoordsStruct(Coordinates* self)
     self->_x.channel = 0;
 
     #if defined(LEVER_JLM)
-        // Empirical values; will need to be adjusted on a case by case basis
+        // Empirical values; might need to be adjusted on a case by case basis
         self->_x.center = 2048;
         self->_x.minimum = 1348;
         self->_x.maximum = 2748;

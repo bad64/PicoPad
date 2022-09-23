@@ -224,6 +224,8 @@ int main(void)
     adc_gpio_init(27);
     adc_gpio_init(28);
 
+    sleep_ms(50);
+
     // Init analog struct
     retval = initCoordsStruct(&coords);
     if (retval != 0)
