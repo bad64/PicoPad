@@ -153,6 +153,7 @@ pokken_controller_report_t report;
 
 Coordinates coords;
 int leverLock;
+uint64_t recalibrateButtonPressBegin, recalibrateButtonPressCounter;
 
 I2C_STATE i2cState;
 uint8_t i2cDataBuf[6];
@@ -411,6 +412,39 @@ int main(void)
 
             report.z = 127;
             report.rz = 127;
+        }
+        // Recalibration check
+        if (report.buttons & (MASK_X | MASK_Y | MASK_START))
+        {
+            if (recalibrateButtonPressBegin == -1)
+            {
+                recalibrateButtonPressBegin = time_us_64();
+            }
+            else
+            {
+                if (recalibrateButtonPressCounter == -1)
+                {
+                    recalibrateButtonPressCounter = recalibrateButtonPressBegin;
+                }
+                else
+                {
+                    if (recalibrateButtonPressCounter - recalibrateButtonPressBegin >= 3000000)
+                    {
+                        recalibrate(&coords);
+                        recalibrateButtonPressBegin = -1;
+                        recalibrateButtonPressCounter = -1;
+                    }
+                    else
+                    {
+                        recalibrateButtonPressCounter = time_us_64();
+                    }
+                }
+            }
+        }
+        else
+        {
+            recalibrateButtonPressBegin = -1;
+            recalibrateButtonPressCounter = -1;
         }
 
         // Handling the left stick

@@ -61,6 +61,7 @@ typedef struct {
 
 int16_t initCoordsStruct(Coordinates* self);
 int16_t updateCoordinates(Coordinates* self);
+void recalibrate(Coordinates* self);
 
 long map(long x, long in_min, long in_max, long out_min, long out_max);
 

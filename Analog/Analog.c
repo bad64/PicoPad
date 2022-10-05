@@ -10,7 +10,7 @@
     #define REVERSE_DEADZONE    60
 #endif
 #if defined(LEVER_U360)
-    #define DEADZONE            15
+    #define DEADZONE            20
     #define REVERSE_DEADZONE    85
 #endif
 
@@ -171,4 +171,9 @@ int16_t updateCoordinates(Coordinates* self)
     }
 
     return 0;
+}
+
+void recalibrate(Coordinates* self)
+{
+    initCoordsStruct(self);
 }
