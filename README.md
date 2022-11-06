@@ -59,7 +59,7 @@ Some notable things about this map:
 
 ## What's next
 
-* i2c Nunchuk mode
+* i2c Nunchuk mode [The stick is done, but the buttons are not]
 * Gamecube mode
 
 ## Mad props to equally mad lads

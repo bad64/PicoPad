@@ -11,7 +11,7 @@
 #endif
 #if defined(LEVER_U360)
     #define DEADZONE            20
-    #define REVERSE_DEADZONE    85
+    #define REVERSE_DEADZONE    70
 #endif
 
 long map(long x, long in_min, long in_max, long out_min, long out_max)

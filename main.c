@@ -35,7 +35,7 @@
 
 // GC notation
 #define PIN_GC_B            PIN_1K
-#define PIN_GC_A            18
+#define PIN_GC_A            19
 #define PIN_GC_Y            PIN_4P
 #define PIN_GC_X            PIN_2K
 #define PIN_GC_L            PIN_SELECT  // It's a long story
@@ -44,7 +44,7 @@
 #define PIN_GC_ZR           PIN_3K
 
 #define PIN_GC_CUP          PIN_2P
-#define PIN_GC_CDOWN        19
+#define PIN_GC_CDOWN        18
 #define PIN_GC_CLEFT        PIN_1P
 #define PIN_GC_CRIGHT       PIN_3P
 
@@ -113,7 +113,7 @@ void haltCatchFire(const char* msg, int errcode)
 //#define BUTTONS_DEBUG
 //#define HAT_DEBUG
 //#define ANALOG_DEBUG
-//#define I2C_DEBUG
+#define I2C_DEBUG
 //#define CSTICK_DEBUG
 
 #if defined(BUTTONS_DEBUG) || defined(HAT_DEBUG) || defined(ANALOG_DEBUG) || defined(CSTICK_DEBUG)
@@ -297,6 +297,9 @@ int main(void)
 
                 if (gpio_get(PIN_START) == 0) report.buttons |= MASK_START;
                 else if (gpio_get(PIN_START) >= 1) report.buttons &= ~MASK_START;
+
+                if (gpio_get(PIN_HOME) == 0) report.buttons |= MASK_HOME;
+                else if (gpio_get(PIN_HOME) >= 1) report.buttons &= ~MASK_HOME;
             #endif
 
             // C-Stick
@@ -572,7 +575,7 @@ int main(void)
                         else
                         {
                             report.x = i2cDataBuf[0];
-                            report.y = i2cDataBuf[1];
+                            report.y = map(i2cDataBuf[1], 0, 255, 255, 0);
                         }
                     }
                     else if (mode_i2c_Nunchuk == 0)

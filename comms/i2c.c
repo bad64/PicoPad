@@ -1,7 +1,7 @@
 #include "i2c.h"
 
 #define REASONABLE_TIMEOUT      20000
-#define CONVERSION_DELAY_US     175
+#define CONVERSION_DELAY_US     200
 
 int8_t i2cStateMachine(I2C_STATE* state, uint8_t* i2cDataBuf)
 {
@@ -23,6 +23,8 @@ int8_t i2cStateMachine(I2C_STATE* state, uint8_t* i2cDataBuf)
 
     if (*state == I2C_INIT_PART1)
     {
+        // Write 0xF0, 0x55 to 0x52
+        // Then wait about 10ms
         retval = i2c_write_timeout_us(i2c0, 0x52, i2cCommandArray[0], 2, false, REASONABLE_TIMEOUT);
 
         if (retval == 2)
@@ -45,6 +47,8 @@ int8_t i2cStateMachine(I2C_STATE* state, uint8_t* i2cDataBuf)
     }
     else if (*state == I2C_INIT_PART2)
     {
+        // Write 0xFB, 0x00 to 0x52
+        // Then wait about 20ms
         retval = i2c_write_blocking(i2c0, 0x52, i2cCommandArray[1], 2, false);
 
         if (retval == 2)
@@ -67,7 +71,9 @@ int8_t i2cStateMachine(I2C_STATE* state, uint8_t* i2cDataBuf)
     }
     else if (*state == I2C_LOOP_READ)
     {
-        retval = i2c_write_timeout_us(i2c0, 0x52, i2cCommandArray[3], 1, false, REASONABLE_TIMEOUT);
+        // Write 0x00 to 0x52
+        // Then wait 200us
+        retval = i2c_write_timeout_us(i2c0, 0x52, 0x00, 1, false, REASONABLE_TIMEOUT);
 
         if (retval == 1)
         {
@@ -89,8 +95,10 @@ int8_t i2cStateMachine(I2C_STATE* state, uint8_t* i2cDataBuf)
     }
     else if (*state == I2C_LOOP_READ_WAIT)
     {
-        bytesToRead = i2c_get_read_available(i2c0);
-        retval = i2c_read_timeout_us(i2c0, 0x52, i2cDataBuf, bytesToRead, false, REASONABLE_TIMEOUT);
+        // Read from 0x52
+        //bytesToRead = i2c_get_read_available(i2c0);
+        //retval = i2c_read_timeout_us(i2c0, 0x52, i2cDataBuf, bytesToRead, false, REASONABLE_TIMEOUT);
+        retval = i2c_read_timeout_us(i2c0, 0x52, i2cDataBuf, 6, false, REASONABLE_TIMEOUT);
 
         if (retval == PICO_ERROR_GENERIC)
         {
