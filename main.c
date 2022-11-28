@@ -10,91 +10,9 @@
 #include "usb_descriptors.h"
 #include "tasks.h"
 
+#include "config/config.h"
 #include "Analog/Analog.h"
 #include "comms/i2c.h"
-
-// Pin definitions
-#define PIN_DPAD_DOWN       0
-#define PIN_DPAD_UP         1
-#define PIN_DPAD_LEFT       2
-#define PIN_DPAD_RIGHT      3
-#define PIN_HOME            4
-#define PIN_SELECT          5
-#define PIN_START           6
-#define PIN_1P              7
-#define PIN_2P              8
-#define PIN_3P              9
-#define PIN_4P              10
-#define PIN_1K              11
-#define PIN_2K              12
-#define PIN_3K              13
-#define PIN_4K              14
-#define PIN_LS_DP           15
-#define PIN_SDA             16
-#define PIN_SCL             17
-
-// GC notation
-#define PIN_GC_B            PIN_1K
-#define PIN_GC_A            19
-#define PIN_GC_Y            PIN_4P
-#define PIN_GC_X            PIN_2K
-#define PIN_GC_L            PIN_SELECT  // It's a long story
-#define PIN_GC_R            PIN_4K
-//#define PIN_GC_ZL           PIN_UNUSED    // Does not have a physical button mapped
-#define PIN_GC_ZR           PIN_3K
-
-#define PIN_GC_CUP          PIN_2P
-#define PIN_GC_CDOWN        18
-#define PIN_GC_CLEFT        PIN_1P
-#define PIN_GC_CRIGHT       PIN_3P
-
-#define PIN_ANALOG_X        26
-#define PIN_ANALOG_Y        27
-
-#define PIN_GC_DATA         28
-
-#define ADC_X               0
-#define ADC_Y               1
-#define ADC_B               2
-
-// Switch bitmasks
-#define MASK_Y              0b0000000000000001
-#define MASK_B              0b0000000000000010
-#define MASK_A              0b0000000000000100
-#define MASK_X              0b0000000000001000
-#define MASK_L              0b0000000000010000
-#define MASK_R              0b0000000000100000
-#define MASK_ZL             0b0000000001000000
-#define MASK_ZR             0b0000000010000000
-#define MASK_SELECT         0b0000000100000000
-#define MASK_START          0b0000001000000000
-#define MASK_L3             0b0000010000000000  // Unused
-#define MASK_R3             0b0000100000000000  // Unused
-#define MASK_HOME           0b0001000000000000
-#define MASK_CAPTURE        0b0010000000000000
-#define MASK_UNUSED1        0b0100000000000000
-#define MASK_UNUSED2        0b1000000000000000
-
-// FGC mode bitmasks
-#define MASK_1P             MASK_Y
-#define MASK_2P             MASK_X
-#define MASK_3P             MASK_R
-#define MASK_4P             MASK_L
-#define MASK_1K             MASK_B
-#define MASK_2K             MASK_A
-#define MASK_3K             MASK_ZR
-#define MASK_4K             MASK_ZL
-
-// Hat
-#define HAT_NEUTRAL         -1
-#define HAT_UP              0
-#define HAT_UP_RIGHT        1
-#define HAT_RIGHT           2
-#define HAT_DOWN_RIGHT      3
-#define HAT_DOWN            4
-#define HAT_DOWN_LEFT       5
-#define HAT_LEFT            6
-#define HAT_UP_LEFT         7
 
 // Modes
 uint8_t mode_splitDpad;
@@ -109,15 +27,49 @@ void haltCatchFire(const char* msg, int errcode)
     while(1) {}
 }
 
-// NOTE: The Pico is powerful, yes, but *maybe* don't run all the tests at the same time
-//#define BUTTONS_DEBUG
-//#define HAT_DEBUG
-//#define ANALOG_DEBUG
-#define I2C_DEBUG
-//#define CSTICK_DEBUG
+// Lever info
+#if defined(LEVER_JLM)
+    #pragma message "Using Sanwa JLM lever configuration template"
+#endif
+
+#if defined(LEVER_U360)
+    #pragma message "Using Ultrastik U360 lever configuration template"
+#endif
+
+#if defined(LEVER_NONE)
+    #pragma message "Using \"no lever\" configuration template"
+#endif
 
 #if defined(BUTTONS_DEBUG) || defined(HAT_DEBUG) || defined(ANALOG_DEBUG) || defined(CSTICK_DEBUG)
     uint16_t delay = 2048;
+#endif
+
+// Pinout info
+#if defined(PINOUT_PROTOTYPE_BOARD)
+    #pragma message "Using prototype board pinout"
+#else
+    #pragma message "Using final board pinout"
+#endif
+
+// Debug flags
+#if defined(BUTTONS_DEBUG)
+    #pragma message "Debug: Buttons"
+#endif
+
+#if defined(HAT_DEBUG)
+    #pragma message "Debug: Hat"
+#endif
+
+#if defined(ANALOG_DEBUG)
+    #pragma message "Debug: Analog"
+#endif
+
+#if defined(I2C_DEBUG)
+    #pragma message "Debug: I2C"
+#endif
+
+#if defined(CSTICK_DEBUG)
+    #pragma message "Debug: C-Stick"
 #endif
 
 #if defined(BUTTONS_DEBUG)
@@ -152,6 +104,7 @@ void haltCatchFire(const char* msg, int errcode)
 pokken_controller_report_t report;
 
 Coordinates coords;
+uint8_t coordsBufferX, coordsBufferY;
 int leverLock;
 uint64_t recalibrateButtonPressBegin, recalibrateButtonPressCounter;
 
@@ -478,134 +431,61 @@ int main(void)
         }
         else
         {
-            retval = updateCoordinates(&coords);
-            if (retval != 0)
+            if (mode_i2c_Nunchuk == 1)
             {
-                haltCatchFire("Error updating coordinates struct !", retval);
-            }
+                i2cWatchdog = i2cStateMachine(&i2cState, i2cDataBuf);
 
-            if (gpio_get(PIN_LS_DP) == 0)
-            {
-                // D-Pad
-                report.x = 127;     // Center analog
-                report.y = 127;
-
-                #if defined(HAT_DEBUG)
-                    if (hatCounter == delay)
-                    {
-                        hatCounter = 0;
-                        report.hat++;
-                    }
-                    else hatCounter++;
-                #else
-                if (coords.polar.r >= coords.polar.dpadThreshhold)
+                if (i2cWatchdog == PICO_ERROR_GENERIC)
                 {
-                    if (((coords.polar.deg > 337.5) && (coords.polar.deg < 360)) || ((coords.polar.deg >= 0) && (coords.polar.deg < 22.5))) report.hat = HAT_LEFT;
-                    else if ((coords.polar.deg >= 22.5) && (coords.polar.deg < 67.5)) report.hat = HAT_UP_LEFT;
-                    else if ((coords.polar.deg >= 67.5) && (coords.polar.deg < 112.5)) report.hat = HAT_UP;
-                    else if ((coords.polar.deg >= 112.5) && (coords.polar.deg < 157.5)) report.hat = HAT_UP_RIGHT;
-                    else if ((coords.polar.deg >= 157.5) && (coords.polar.deg < 202.5)) report.hat = HAT_RIGHT;
-                    else if ((coords.polar.deg >= 202.5) && (coords.polar.deg < 247.5)) report.hat = HAT_DOWN_RIGHT;
-                    else if ((coords.polar.deg >= 247.5) && (coords.polar.deg < 292.5)) report.hat = HAT_DOWN;
-                    else if ((coords.polar.deg >= 292.5) && (coords.polar.deg < 337.5)) report.hat = HAT_DOWN_LEFT;
-                    else report.hat = HAT_NEUTRAL;
+                    reset_usb_boot(0, 0);
                 }
-                else report.hat = HAT_NEUTRAL;
-                #endif
+                else if (i2cWatchdog == PICO_ERROR_TIMEOUT)
+                {
+                    reset_usb_boot(0, 0);
+                }
+                else
+                {
+                    retval = updateCoordinatesI2C(&coords, i2cDataBuf[0], i2cDataBuf[1]);
+                    if (retval != 0)
+                    {
+                        haltCatchFire("Error updating coordinates struct from I2C !", retval);
+                    }
+                }
             }
             else
             {
-                // Analog
-                report.hat = -1;    // Center D-Pad
-
-                #if defined(ANALOG_DEBUG)
-                    static testCoords testcoords[9];
-
-                    testcoords[0].y = 255;
-                    testcoords[0].x = 0;
-
-                    testcoords[1].y = 255;
-                    testcoords[1].x = 127;
-
-                    testcoords[2].y = 255;
-                    testcoords[2].x = 255;
-
-                    testcoords[3].y = 127;
-                    testcoords[3].x = 0;
-
-                    testcoords[4].y = 127;
-                    testcoords[4].x = 127;
-
-                    testcoords[5].y = 127;
-                    testcoords[5].x = 255;
-
-                    testcoords[6].y = 0;
-                    testcoords[6].x = 0;
-
-                    testcoords[7].y = 0;
-                    testcoords[7].x = 127;
-
-                    testcoords[8].y = 0;
-                    testcoords[8].x = 255;
-
-                    if (analogCounter == delay)
-                    {
-                        if (analogIdx + 1 < 9) analogIdx++;
-                        else analogIdx = 0;
-                        analogCounter = 0;
-                    }
-                    else analogCounter++;
-
-                    report.x = testcoords[analogIdx].x;
-                    report.y = testcoords[analogIdx].y;
-                #else
-                    if (mode_i2c_Nunchuk == 1)
-                    {
-                        i2cWatchdog = i2cStateMachine(&i2cState, i2cDataBuf);
-
-                        if (i2cWatchdog == PICO_ERROR_GENERIC)
-                        {
-                            report.x = 255;
-                            report.y = 255;
-                        }
-                        else if (i2cWatchdog == PICO_ERROR_TIMEOUT)
-                        {
-                            reset_usb_boot(0, 0);
-                        }
-                        else
-                        {
-                            report.x = i2cDataBuf[0];
-                            report.y = map(i2cDataBuf[1], 0, 255, 255, 0);
-                        }
-                    }
-                    else if (mode_i2c_Nunchuk == 0)
-                    {
-                        // Lock the lever reading until actuation
-                        if (leverLock == 1)
-                        {
-                            if ((coords.x != 127) || (coords.y != 127))
-                            {
-                                leverLock = 0;
-                            }
-                            else
-                            {
-                                report.x = 127;
-                                report.y = 127;
-                            }
-                        }
-                        else
-                        {
-                            report.x = (uint8_t)coords.x;
-                            report.y = (uint8_t)coords.y;
-                        }
-                    }
-                    else    // Should not happen
-                    {
-                        report.x = 127;
-                        report.y = 127;
-                    }
-                #endif
+                retval = updateCoordinates(&coords);
+                if (retval != 0)
+                {
+                    haltCatchFire("Error updating coordinates struct !", retval);
+                }
             }
+        }
+
+        if ((gpio_get(PIN_LS_DP) == 0) || ((i2cDataBuf[5] & 0b00000010) == 0))
+        {
+            report.x = 127;
+            report.y = 127;
+
+            if (coords.polar.r >= coords.polar.dpadThreshhold)
+            {
+                if (((coords.polar.deg > 337.5) && (coords.polar.deg < 360)) || ((coords.polar.deg >= 0) && (coords.polar.deg < 22.5))) report.hat = HAT_LEFT;
+                else if ((coords.polar.deg >= 22.5) && (coords.polar.deg < 67.5)) report.hat = HAT_UP_LEFT;
+                else if ((coords.polar.deg >= 67.5) && (coords.polar.deg < 112.5)) report.hat = HAT_UP;
+                else if ((coords.polar.deg >= 112.5) && (coords.polar.deg < 157.5)) report.hat = HAT_UP_RIGHT;
+                else if ((coords.polar.deg >= 157.5) && (coords.polar.deg < 202.5)) report.hat = HAT_RIGHT;
+                else if ((coords.polar.deg >= 202.5) && (coords.polar.deg < 247.5)) report.hat = HAT_DOWN_RIGHT;
+                else if ((coords.polar.deg >= 247.5) && (coords.polar.deg < 292.5)) report.hat = HAT_DOWN;
+                else if ((coords.polar.deg >= 292.5) && (coords.polar.deg < 337.5)) report.hat = HAT_DOWN_LEFT;
+                else report.hat = HAT_NEUTRAL;
+            }
+            else report.hat = HAT_NEUTRAL;
+        }
+        else
+        {
+            report.hat = HAT_NEUTRAL;
+            report.x = (uint8_t)coords.x;
+            report.y = (uint8_t)coords.y;
         }
 
         // Pack into the relevant structs and send to host

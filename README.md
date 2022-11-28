@@ -20,7 +20,7 @@ Hold the following buttons at boot for alternate input modes:
 
 * A -> FGC mode; removes C-Stick input instead giving a standard 8-button fighter configuration
 * B -> Separate D-Pad mode; Treats the D-Pad as completely separate from the left analog
-* Start -> Nunchuk mode; Enables plugging a Nunchuk into the i2c port for left stick input (currently not implemented)
+* Start -> Nunchuk mode; Enables plugging a Nunchuk into the i2c port for left stick input
 * Select -> BOOTSEL mode; aka what you need to flash new firmware onto the RP2040 (not actually an input mode but worth noting anyway)
 
 Split D-Pad isn't mutually exclusive with other modes, it's merely a modifier pertaining to how the board should handle hat inputs.
@@ -67,7 +67,7 @@ Some notable things about this map:
 These people contributed in some way in kicking my ass through this project, or motivating me to do the kicking myself:
 
 * [AltLabs](http://www.altlabcontrollers.com/) for inspiring this whole project really
-* [Haystack](https://github.com/JonnyHaystack/HayBox) for explaining USB like I'm five at a time where I really needed it
+* [Haystack](https://github.com/JonnyHaystack/HayBox) for explaining USB like I'm five at a time where I really needed it, and for having a working implementation of the Nunchuk
 * [Hadoe](https://github.com/HTangl/Model-UD) for the Model-UD schematic
 * [BitBang](https://bitbanggaming.com/) for teaching me the basics of embedded software development and PCB design
 * [Kayane](https://twitter.com/kayane) for inspiring me to keep modding fightsticks

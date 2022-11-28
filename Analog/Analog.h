@@ -6,18 +6,22 @@
 
 #include "hardware/adc.h"
 
+#include "config/config.h"
 //#pragma message "AnalogLever library v0.0.1"
 
 /****************************************************
  * General analog header to include in your project *
 *****************************************************/
+#if !defined(LEVER_JLM) && !defined(LEVER_U360) && !defined(LEVER_NONE)
+    #error "You need to define either lever in config/config.h"
+#endif
 
-// Lever selection compile-time defines
-//#define LEVER_JLM
-#define LEVER_U360
+#ifdef LEVER_JLM
+    #pragma message "Using Sanwa JLM configuration template"
+#endif
 
-#if !defined(LEVER_JLM) && !defined(LEVER_U360)
-    #error "You need to define either lever in Analog.h"
+#ifdef LEVER_U360
+    #pragma message "Using Ultimarc Ultrastik 360 configuration template"
 #endif
 
 /* Axis struct */
@@ -61,6 +65,7 @@ typedef struct {
 
 int16_t initCoordsStruct(Coordinates* self);
 int16_t updateCoordinates(Coordinates* self);
+int16_t updateCoordinatesI2C(Coordinates* self, uint8_t xbuf, uint8_t ybuf);
 void recalibrate(Coordinates* self);
 
 long map(long x, long in_min, long in_max, long out_min, long out_max);

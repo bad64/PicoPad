@@ -4,16 +4,6 @@
 #define PI                  3.1416
 #define NUMBER_OF_SAMPLES   10
 
-// You may want to change these to suit your personal preferences
-#if defined(LEVER_JLM)
-    #define DEADZONE            12
-    #define REVERSE_DEADZONE    60
-#endif
-#if defined(LEVER_U360)
-    #define DEADZONE            20
-    #define REVERSE_DEADZONE    70
-#endif
-
 long map(long x, long in_min, long in_max, long out_min, long out_max)
 {
     // Literally the Arduino map() function
@@ -75,6 +65,12 @@ int16_t initCoordsStruct(Coordinates* self)
         self->_x.maximum = 2865;
     #endif
 
+    #if defined(LEVER_NONE)
+        self->_x.center = 127;
+        self->_x.minimum = 0;
+        self->_x.maximum = 255;
+    #endif
+
     self->_x.sampleArray = (uint16_t*)malloc(sizeof(uint16_t) * NUMBER_OF_SAMPLES);
     if (self->_x.sampleArray == NULL) return -1;
 
@@ -98,12 +94,18 @@ int16_t initCoordsStruct(Coordinates* self)
         self->_y.maximum = 2940;
     #endif
 
+    #if defined(LEVER_NONE)
+        self->_y.center = 127;
+        self->_y.minimum = 0;
+        self->_y.maximum = 255;
+    #endif
+
     self->_y.sampleArray = (uint16_t*)malloc(sizeof(uint16_t) * NUMBER_OF_SAMPLES);
     if (self->_y.sampleArray == NULL) return -2;
 
     self->_y.offset = 0;
 
-    // Set polar thressholds
+    // Set polar threshholds
     self->polar.rmax = getRMax(127, 0);
     self->polar.dzThreshhold = (self->polar.rmax * DEADZONE) / 100;
     self->polar.rdzThreshhold = (self->polar.rmax * REVERSE_DEADZONE) / 100;
@@ -169,6 +171,26 @@ int16_t updateCoordinates(Coordinates* self)
         self->_y.offset = 127 - self->y;
         self->_y.calibrated = 1;
     }
+
+    return 0;
+}
+
+int16_t updateCoordinatesI2C(Coordinates* self, uint8_t xbuf, uint8_t ybuf)
+{
+    convertToPolar(&self->polar, (int8_t)map(xbuf, 0, 255, -127, 127), (int8_t)map(ybuf, 0, 255, 127, -127));
+
+    if (self->polar.r < self->polar.dzThreshhold)
+    {
+        xbuf = 127;
+        ybuf = 127;
+    }
+    else if (self->polar.r > self->polar.rdzThreshhold)
+    {
+        self->polar.r = self->polar.rmax;
+    }
+
+    self->x = xbuf;
+    self->y = (uint8_t)map(ybuf, 0, 255, 255, 0);
 
     return 0;
 }

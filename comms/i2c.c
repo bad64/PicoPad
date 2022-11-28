@@ -96,8 +96,6 @@ int8_t i2cStateMachine(I2C_STATE* state, uint8_t* i2cDataBuf)
     else if (*state == I2C_LOOP_READ_WAIT)
     {
         // Read from 0x52
-        //bytesToRead = i2c_get_read_available(i2c0);
-        //retval = i2c_read_timeout_us(i2c0, 0x52, i2cDataBuf, bytesToRead, false, REASONABLE_TIMEOUT);
         retval = i2c_read_timeout_us(i2c0, 0x52, i2cDataBuf, 6, false, REASONABLE_TIMEOUT);
 
         if (retval == PICO_ERROR_GENERIC)
