@@ -1,6 +1,8 @@
 #include "Analog.h"
 #include <stdlib.h>
 
+#if defined(MODE_NOTSMASHSTICK)
+
 #define PI                  3.1416
 #define NUMBER_OF_SAMPLES   10
 
@@ -199,3 +201,5 @@ void recalibrate(Coordinates* self)
 {
     initCoordsStruct(self);
 }
+
+#endif

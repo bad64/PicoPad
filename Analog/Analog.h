@@ -12,16 +12,10 @@
 /****************************************************
  * General analog header to include in your project *
 *****************************************************/
-#if !defined(LEVER_JLM) && !defined(LEVER_U360) && !defined(LEVER_NONE)
-    #error "You need to define either lever in config/config.h"
-#endif
-
-#ifdef LEVER_JLM
-    #pragma message "Using Sanwa JLM configuration template"
-#endif
-
-#ifdef LEVER_U360
-    #pragma message "Using Ultimarc Ultrastik 360 configuration template"
+#if defined(MODE_NOTSMASHSTICK)
+    #if !defined(LEVER_JLM) && !defined(LEVER_U360) && !defined(LEVER_NONE)
+        #error "You need to define either lever in config/config.h"
+    #endif
 #endif
 
 /* Axis struct */
