@@ -12,11 +12,6 @@
 
 #include "config/config.h"
 
-// Modes
-uint8_t mode_splitDpad;
-uint8_t mode_i2c_Nunchuk;
-uint8_t mode_fgc;
-
 // Debug stuff
 int retval; // Old reliable !
 void haltCatchFire(const char* msg, int errcode)
@@ -25,76 +20,16 @@ void haltCatchFire(const char* msg, int errcode)
     while(1) {}
 }
 
-#if defined(BUTTONS_DEBUG) || defined(HAT_DEBUG) || defined(ANALOG_DEBUG) || defined(CSTICK_DEBUG)
-    uint16_t delay = 2048;
-#endif
-
-// Pinout info
-#if defined(PINOUT_PROTOTYPE_BOARD)
-    #pragma message "Using prototype board pinout"
-#else
-    #pragma message "Using final board pinout"
-#endif
-
-// Debug flags
-#if defined(BUTTONS_DEBUG)
-    #pragma message "Debug: Buttons"
-#endif
-
-#if defined(HAT_DEBUG)
-    #pragma message "Debug: Hat"
-#endif
-
-#if defined(ANALOG_DEBUG)
-    #pragma message "Debug: Analog"
-#endif
-
-#if defined(I2C_DEBUG)
-    #pragma message "Debug: I2C"
-#endif
-
-#if defined(CSTICK_DEBUG)
-    #pragma message "Debug: C-Stick"
-#endif
-
-#if defined(BUTTONS_DEBUG)
-    int masks[8] = { MASK_B, MASK_A, MASK_Y, MASK_X, MASK_L, MASK_R, MASK_ZR, MASK_START };
-    int buttons[] = { PIN_GC_B, PIN_GC_A, PIN_GC_Y, PIN_GC_X, PIN_GC_L, PIN_GC_R, PIN_GC_ZR, PIN_START };
-    uint8_t buttonsIdx = 0;
-    uint16_t buttonsCounter = 0;
-#endif
-
-#if defined(ANALOG_DEBUG) || defined(CSTICK_DEBUG)
-    typedef struct {
-        uint8_t x;
-        uint8_t y;
-    } testCoords;
-#endif
-
-#if defined(HAT_DEBUG)
-    uint16_t hatCounter = 0;
-#endif
-
-#if defined(ANALOG_DEBUG)
-    uint8_t analogIdx = 0;
-    uint16_t analogCounter = 0;
-#endif
-
-#if defined(CSTICK_DEBUG)
-    uint8_t cstickIdx = 0;
-    uint16_t cstickCounter = 0;
-#endif
-
 // Useful variables
 pokken_controller_report_t report;
 
-#if defined(MODE_GENERICBOX)
+#if defined(MODE_GENERICBOX_18_BUTTONS) || defined(MODE_GENERICBOX_20_BUTTONS)
     #include "modes/GenericBox/GenericBox.h"
-    #pragma message "Using Generic Box (B0XX/Frame1) layout"
 #endif
 
 #if defined(MODE_WASDBOX)
     #include "modes/WASDBox/WasdBox.h"
+    // TODO: Move messages to their respective headers
     #pragma message "Using WASD-style Box layout"
 #endif
 
@@ -104,19 +39,6 @@ pokken_controller_report_t report;
     uint8_t coordsBufferX, coordsBufferY;
     int leverLock;
     uint64_t recalibrateButtonPressBegin, recalibrateButtonPressCounter;
-
-    // Lever info
-    #if defined(LEVER_JLM)
-        #pragma message "Using NotSmashStick config w/ Sanwa JLM lever configuration template"
-    #endif
-
-    #if defined(LEVER_U360)
-        #pragma message "Using NotSmashStick config w/ Ultrastik U360 lever configuration template"
-    #endif
-
-    #if defined(LEVER_NONE)
-        #pragma message "Using NotSmashStick config w/ \"no lever\" configuration template"
-    #endif
 #endif
 
 #if defined(MODE_I2CSTICK)
@@ -125,6 +47,7 @@ pokken_controller_report_t report;
     uint8_t i2cDataBuf[6];
     uint8_t i2cWatchdog;
 
+    // TODO: Move messages to their respective headers
     #pragma message "Using I2C Nunchuk box configuration template"
 #endif
 
@@ -152,9 +75,7 @@ int main(void)
     // Set GC output line
     //gpio_set_dir(29, GPIO_OUT);
 
-    // Bootsel
-    if (gpio_get(PIN_START) == 0) reset_usb_boot(0, 0);
-
+    // Mode specific stuff
     #if defined(MODE_NOTSMASHSTICK)
         leverLock = 0;
 
@@ -184,6 +105,9 @@ int main(void)
         gpio_pull_up(PIN_SDA);
         gpio_pull_up(PIN_SCL);
     #endif
+
+    // Bootsel
+    if (gpio_get(INPUT_START) == 0) reset_usb_boot(0, 0);
     
     // Init USB
     board_init();
@@ -210,8 +134,15 @@ int main(void)
         doCStick((dummy_report_t*)&report);
 
         // Then directions
-        doLeftStick((dummy_report_t*)&report);
+        #if defined(MODE_GENERICBOX_18_BUTTONS) || defined(MODE_GENERICBOX_20_BUTTONS) || defined(MODE_WASDBOX)
+            doLeftStick((dummy_report_t*)&report);
+        #endif
+        #if defined(MODE_NOTSMASHSTICK)
+            updateCoordinates(coords);
+            doLeftStick((dummy_report_t*)&report, coords);
+        #endif
         
+        // Send to host
         hid_task(report);
     }
 }

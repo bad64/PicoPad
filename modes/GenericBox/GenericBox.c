@@ -40,6 +40,8 @@ void doButtons(dummy_report_t* report)
         report->buttons &= MASK_SELECT;
         report->buttons &= MASK_HOME;
     }
+
+    // TODO: Mid && Light shields for GC ?
 }
 
 void doCStick(dummy_report_t* report)
@@ -72,43 +74,188 @@ void doCStick(dummy_report_t* report)
 
 void doLeftStick(dummy_report_t* report)
 {
-    // TODO: ModX = walk, ModY = tiptoe
-    if ((gpio_get(INPUT_DOWN) == 0) && (gpio_get(INPUT_UP) == 1)) // Down && not Up
+    if (gpio_get(INPUT_LS_DP) == 0)                                         // Dpad mode
     {
-        if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1)) // Left && not Right
-        {
-            if ((gpio_get(INPUT_MODX) == 0) && (gpio_get(INPUT_MODY) >= 1)) // MODX && not MODY
-            {
 
-            }
-            else if ((gpio_get(INPUT_MODX) == 0) && (gpio_get(INPUT_MODY) >= 1)) // Not MODX && MODY
-            {
-
-            }
-            else if ((gpio_get(INPUT_MODX) == 0) && (gpio_get(INPUT_MODY) == 0)) // MODX && MODY
-            {
-
-            }
-            else // Neither MODX nor MODY
-            {
-
-            }
-        }
-        else if ((gpio_get(INPUT_LEFT) >= 1) && (gpio_get(INPUT_RIGHT) == 0)) // Not Left && Right
-        {
-
-        }
-        else    // Either Left && Right or not Left && not Right
-        {
-
-        }
     }
-    else if ((gpio_get(INPUT_DOWN) == 1) && (gpio_get(INPUT_UP) == 0)) // Not Down && Up
+    else if (gpio_get(INPUT_LS_DP) >= 1)                                    // Analog mode
     {
+        report->hat = HAT_NEUTRAL;
         
-    }
-    else // Neither up nor down or both at once
-    {
+        if (gpio_get(INPUT_MODX) >= 1) && (gpio_get(INPUT_MODY) >= 1)           // No modifiers
+        {
+            if ((gpio_get(INPUT_UP) == 0) && (gpio_get(INPUT_DOWN) >= 1))           // Up && not Down
+            {
+                if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))        // Left && not Right
+                {
+                    report->y = UP_MAX;
+                    report->x = LEFT_MAX;
+                }
+                else if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))   // Not Left && Right
+                {
+                    report->y = UP_MAX;
+                    report->x = RIGHT_MAX;
+                }
+                else                                                                    // (Left && Right) || (not Left && not Right)
+                {
+                    report->y = UP_MAX;
+                    report->x = NEUTRAL;
+                }
+            }
+            else if ((gpio_get(INPUT_UP) >= 1) && (gpio_get(INPUT_DOWN) == 0))      // Not up && Down
+            {
+                if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
+                {
+                    report->y = DOWN_MAX;
+                    report->x = LEFT_MAX;
+                }
+                else if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
+                {
+                    report->y = DOWN_MAX;
+                    report->x = RIGHT_MAX;
+                }
+                else
+                {
+                    report->y = DOWN_MAX;
+                    report->x = NEUTRAL;
+                }
+            }
+            else                                                                    // (Up && Down) || (not Up && not Down)
+            {
+                if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
+                {
+                    report->y = NEUTRAL;
+                    report->x = LEFT_MAX;
+                }
+                else if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
+                {
+                    report->y = NEUTRAL;
+                    report->x = RIGHT_MAX;MAX
+                }
+                else
+                {
+                    report->y = NEUTRAL;
+                    report->x = NEUTRAL;
+                }
+            }
+        }
+        else if (gpio_get(INPUT_MODX) == 0) && (gpio_get(INPUT_MODY) >= 1)      // ModX = walking speed
+        {
+            if ((gpio_get(INPUT_UP) == 0) && (gpio_get(INPUT_DOWN) >= 1))
+            {
+                if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
+                {
+                    report->y = UP_HALF;
+                    report->x = LEFT_HALF;
+                }
+                else if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
+                {
+                    report->y = UP_HALF;
+                    report->x = RIGHT_HALF;
+                }
+                else
+                {
+                    report->y = UP_HALF;
+                    report->x = NEUTRAL;
+                }
+            }
+            else if ((gpio_get(INPUT_UP) >= 1) && (gpio_get(INPUT_DOWN) == 0))
+            {
+                if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
+                {
+                    report->y = DOWN_HALF;
+                    report->x = LEFT_HALF;
+                }
+                else if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
+                {
+                    report->y = DOWN_HALF;
+                    report->x = RIGHT_HALF;
+                }
+                else
+                {
+                    report->y = DOWN_HALF;
+                    report->x = NEUTRAL;
+                }
+            }
+            else
+            {
+                if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
+                {
+                    report->y = NEUTRAL;
+                    report->x = LEFT_HALF;
+                }
+                else if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
+                {
+                    report->y = NEUTRAL;
+                    report->x = RIGHT_HALF;
+                }
+                else
+                {
+                    report->y = NEUTRAL;
+                    report->x = NEUTRAL;
+                }
+            }
+        }
+        else if (gpio_get(INPUT_MODX) >= 1) && (gpio_get(INPUT_MODY) == 0)      // ModY = tiptoeing speed
+        {
+            if ((gpio_get(INPUT_UP) == 0) && (gpio_get(INPUT_DOWN) >= 1))
+            {
+                if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
+                {
+                    report->y = UP_MIN;
+                    report->x = LEFT_MIN;
+                }
+                else if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
+                {
+                    report->y = UP_MIN;
+                    report->x = RIGHT_MIN;
+                }
+                else
+                {
+                    report->y = UP_MIN;
+                    report->x = NEUTRAL;
+                }
+            }
+            else if ((gpio_get(INPUT_UP) >= 1) && (gpio_get(INPUT_DOWN) == 0))
+            {
+                if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
+                {
+                    report->y = DOWN_MIN;
+                    report->x = LEFT_MIN;
+                }
+                else if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
+                {
+                    report->y = DOWN_MIN;
+                    report->x = RIGHT_MIN;
+                }
+                else
+                {
+                    report->y = DOWN_MIN;
+                    report->x = NEUTRAL;
+                }
+            }
+            else
+            {
+                if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
+                {
+                    report->y = NEUTRAL;
+                    report->x = LEFT_MIN;
+                }
+                else if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
+                {
+                    report->y = NEUTRAL;
+                    report->x = RIGHT_MIN;
+                }
+                else
+                {
+                    report->y = NEUTRAL;
+                    report->x = NEUTRAL;
+                }
+            }
+        }
+        else if (gpio_get(INPUT_MODX) == 0) && (gpio_get(INPUT_MODY) == 0)      // TODO: Is that even a valid state to begin with ?
+        {
 
+        }
     }
 }

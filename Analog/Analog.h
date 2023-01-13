@@ -12,11 +12,6 @@
 /****************************************************
  * General analog header to include in your project *
 *****************************************************/
-#if defined(MODE_NOTSMASHSTICK)
-    #if !defined(LEVER_JLM) && !defined(LEVER_U360) && !defined(LEVER_NONE)
-        #error "You need to define either lever in config/config.h"
-    #endif
-#endif
 
 /* Axis struct */
 typedef struct {
