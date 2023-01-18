@@ -1,25 +1,21 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-/* Pin definitions */
-//#define PINOUT_PROTOTYPE_BOARD
-//#define PINOUT_FINAL_BOARD
+#include "pico/stdlib.h"
+#include "hardware/gpio.h"
+#include "hardware/adc.h"
+#include "pico/bootrom.h"
 
-#if defined(PINOUT_PROTOTYPE_BOARD)
-    #include "config/pinout_prototype.h"
-#endif
-#if defined (PINOUT_FINAL_BOARD)
-    #include "config/pinout_final.h"
-#endif
+#include "bsp/board.h"
+#include "tusb.h"
 
-#if !defined(PINOUT_PROTOTYPE_BOARD) && !defined(PINOUT_FINAL_BOARD)
-    #error "Please select a board configuration in config/config.h"
-#endif
+#include "usb_descriptors.h"
+#include "tasks.h"
 
 /* Mode definitions */
 //#define MODE_GENERICBOX_18_BUTTONS
 //#define MODE_GENERICBOX_20_BUTTONS
-//#define MODE_WASDBOX
+#define MODE_WASDBOX
 //#define MODE_NOTSMASHSTICK
 //#define MODE_I2CSTICK
 
@@ -30,8 +26,6 @@
 
 /* Analog users: Select your joystick here */
 #if defined(MODE_NOTSMASHSTICK)
-    #include "Analog/Analog.h"
-
     /* Lever selection compile-time defines */
     //#define LEVER_JLM
     //#define LEVER_U360
@@ -49,10 +43,6 @@
     #if !defined(LEVER_JLM) && !defined(LEVER_U360)
         #error "Please select your analog lever in config/config.h"
     #endif
-#endif
-
-#if defined(MODE_I2CSTICK)
-    #include "comms/i2c.h"
 #endif
 
 #endif

@@ -2,6 +2,23 @@
 #define GENERIC_INPUT_INTERFACE_H
 
 #include <stdint.h>
+#include <config/config.h>
+#pragma message "cc"
+
+/* Pin definitions */
+//#define PINOUT_PROTOTYPE_BOARD
+#define PINOUT_FINAL_BOARD
+
+#if defined(PINOUT_PROTOTYPE_BOARD)
+    #include <config/pinout_prototype.h>
+#endif
+#if defined (PINOUT_FINAL_BOARD)
+    #include <config/pinout_final.h>
+#endif
+
+#if !defined(PINOUT_PROTOTYPE_BOARD) && !defined(PINOUT_FINAL_BOARD)
+    #error "Please select a board configuration in config/config.h"
+#endif
 
 // Switch bitmasks
 #define MASK_Y              0b0000000000000001

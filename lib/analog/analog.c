@@ -1,4 +1,4 @@
-#include "Analog.h"
+#include "analog.h"
 #include <stdlib.h>
 
 #if defined(MODE_NOTSMASHSTICK)
@@ -173,26 +173,6 @@ int16_t updateCoordinates(Coordinates* self)
         self->_y.offset = 127 - self->y;
         self->_y.calibrated = 1;
     }
-
-    return 0;
-}
-
-int16_t updateCoordinatesI2C(Coordinates* self, uint8_t xbuf, uint8_t ybuf)
-{
-    convertToPolar(&self->polar, (int8_t)map(xbuf, 0, 255, -127, 127), (int8_t)map(ybuf, 0, 255, 127, -127));
-
-    if (self->polar.r < self->polar.dzThreshhold)
-    {
-        xbuf = 127;
-        ybuf = 127;
-    }
-    else if (self->polar.r > self->polar.rdzThreshhold)
-    {
-        self->polar.r = self->polar.rmax;
-    }
-
-    self->x = xbuf;
-    self->y = (uint8_t)map(ybuf, 0, 255, 255, 0);
 
     return 0;
 }

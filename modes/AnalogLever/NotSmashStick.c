@@ -1,4 +1,5 @@
 #include "NotSmashStick.h"
+#if defined(MODE_NOTSMASHSTICK)
 
 #if defined(LEVER_JLM)
     #pragma message "Using NotSmashStick config w/ Sanwa JLM lever configuration template"
@@ -66,8 +67,11 @@ void doCStick(dummy_report_t* report)
     }
 }
 
-void doLeftStick(dummy_report_t* report, Coordinates coords)
+void doLeftStick(dummy_report_t* report)
 {
+    Coordinates coords;
+    updateCoordinates(&coords);
+
     if (gpio_get(INPUT_LS_DP) == 0)
     {
         report->x = 127;
@@ -84,6 +88,7 @@ void doLeftStick(dummy_report_t* report, Coordinates coords)
                 else if ((coords.polar.deg >= 202.5) && (coords.polar.deg < 247.5)) report->hat = HAT_DOWN_RIGHT;
                 else if ((coords.polar.deg >= 247.5) && (coords.polar.deg < 292.5)) report->hat = HAT_DOWN;
                 else if ((coords.polar.deg >= 292.5) && (coords.polar.deg < 337.5)) report->hat = HAT_DOWN_LEFT;
+                else report->hat = HAT_NEUTRAL;
             #endif
             #if defined(LEVER_U360)
             if (((coords.polar.deg > 337.5) && (coords.polar.deg < 360)) || ((coords.polar.deg >= 0) && (coords.polar.deg < 22.5))) report->hat = HAT_LEFT;
@@ -94,8 +99,8 @@ void doLeftStick(dummy_report_t* report, Coordinates coords)
                 else if ((coords.polar.deg >= 202.5) && (coords.polar.deg < 247.5)) report->hat = HAT_UP_RIGHT;
                 else if ((coords.polar.deg >= 247.5) && (coords.polar.deg < 292.5)) report->hat = HAT_UP;
                 else if ((coords.polar.deg >= 292.5) && (coords.polar.deg < 337.5)) report->hat = HAT_UP_LEFT;
+                else report->hat = HAT_NEUTRAL;
             #endif
-            else report->hat = HAT_NEUTRAL;
         }
         else report->hat = HAT_NEUTRAL;
     }
@@ -106,3 +111,5 @@ void doLeftStick(dummy_report_t* report, Coordinates coords)
         report->y = (uint8_t)coords.y;
     }
 }
+
+#endif

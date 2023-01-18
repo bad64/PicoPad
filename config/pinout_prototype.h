@@ -1,6 +1,8 @@
 #ifndef PINOUT_H
 #define PINOUT_H
 
+#pragma message "Using prototype pinout"
+
 #define PIN_DPAD_DOWN       0
 #define PIN_DPAD_UP         1
 #define PIN_DPAD_LEFT       2

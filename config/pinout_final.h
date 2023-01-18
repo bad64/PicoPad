@@ -1,6 +1,8 @@
 #ifndef PINOUT_H
 #define PINOUT_H
 
+#pragma message "Using retail pinout"
+
 #define PIN_DPAD_DOWN       18
 #define PIN_DPAD_UP         19
 #define PIN_DPAD_LEFT       16

@@ -1,8 +1,8 @@
-#ifndef NOTSMAHSTICK_H
+#ifndef NOTSMASHSTICK_H
 #define NOTSMASHSTICK_H
 
-#include <Analog/Analog.h>
 #include "../GenericModeInterface.h"
+#include <lib/analog/analog.h>
 
 #define INPUT_UP        -1
 #define INPUT_DOWN      -1
@@ -34,9 +34,5 @@
 
 #define INPUT_MS        -1
 #define INPUT_LS        -1
-
-void doButtons(dummy_report_t* report);
-void doLeftStick(dummy_report_t* report, Coordinates coords);
-void doCStick(dummy_report_t* report);
 
 #endif

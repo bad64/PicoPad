@@ -1,16 +1,20 @@
-#include <stdio.h>
-#include "pico/stdlib.h"
-#include "hardware/gpio.h"
-#include "hardware/adc.h"
-#include "pico/bootrom.h"
+#include <config/config.h>
 
-#include "bsp/board.h"
-#include "tusb.h"
+#if defined(MODE_GENERICBOX_18_BUTTONS) || defined(MODE_GENERICBOX_20_BUTTONS)
+    #include "modes/GenericBox/GenericBox.h"
+#endif
 
-#include "usb_descriptors.h"
-#include "tasks.h"
+#if defined(MODE_WASDBOX)
+    #include "modes/WASDBox/WasdBox.h"
+#endif
 
-#include "config/config.h"
+#if defined(MODE_NOTSMASHSTICK)
+    #include "modes/AnalogLever/NotSmashStick.h"
+#endif
+
+#if defined(MODE_I2CSTICK)
+    #include "modes/Nunchuk/Nunchuk.h"
+#endif
 
 // Debug stuff
 int retval; // Old reliable !
@@ -22,34 +26,6 @@ void haltCatchFire(const char* msg, int errcode)
 
 // Useful variables
 pokken_controller_report_t report;
-
-#if defined(MODE_GENERICBOX_18_BUTTONS) || defined(MODE_GENERICBOX_20_BUTTONS)
-    #include "modes/GenericBox/GenericBox.h"
-#endif
-
-#if defined(MODE_WASDBOX)
-    #include "modes/WASDBox/WasdBox.h"
-    // TODO: Move messages to their respective headers
-    #pragma message "Using WASD-style Box layout"
-#endif
-
-#if defined(MODE_NOTSMASHSTICK)
-    #include "modes/NotSmashStick/NotSmashStick.h"
-    Coordinates coords;
-    uint8_t coordsBufferX, coordsBufferY;
-    int leverLock;
-    uint64_t recalibrateButtonPressBegin, recalibrateButtonPressCounter;
-#endif
-
-#if defined(MODE_I2CSTICK)
-    #include "modes/I2CNunchuck/i2cStick.h"
-    I2C_STATE i2cState;
-    uint8_t i2cDataBuf[6];
-    uint8_t i2cWatchdog;
-
-    // TODO: Move messages to their respective headers
-    #pragma message "Using I2C Nunchuk box configuration template"
-#endif
 
 int main(void)
 {  
@@ -77,8 +53,6 @@ int main(void)
 
     // Mode specific stuff
     #if defined(MODE_NOTSMASHSTICK)
-        leverLock = 0;
-
         // Init analog pins
         adc_init();
         adc_gpio_init(26);
@@ -88,11 +62,11 @@ int main(void)
         sleep_ms(50);
 
         // Init analog struct
-        retval = initCoordsStruct(&coords);
-        if (retval != 0)
-        {
-            haltCatchFire("Error initializing coordinates struct !", retval);
-    }
+        //retval = initCoordsStruct(&coords);
+        //if (retval != 0)
+        //{
+        //    haltCatchFire("Error initializing coordinates struct !", retval);
+        //}
     #endif
 
     #if defined(MODE_I2CSTICK)
@@ -138,8 +112,7 @@ int main(void)
             doLeftStick((dummy_report_t*)&report);
         #endif
         #if defined(MODE_NOTSMASHSTICK)
-            updateCoordinates(coords);
-            doLeftStick((dummy_report_t*)&report, coords);
+            doLeftStick((dummy_report_t*)&report);
         #endif
         
         // Send to host

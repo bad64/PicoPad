@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 
-include(pico_sdk_import.cmake)
+include(config/pico_sdk_import.cmake)
 
 project(picopad C CXX ASM)
 
@@ -10,7 +10,9 @@ set(CMAKE_CXX_STANDARD 17)
 pico_sdk_init()
 
 add_executable(picopad)
-target_sources(picopad PUBLIC ${CMAKE_CURRENT_LIST_DIR}/main.c ${CMAKE_CURRENT_LIST_DIR}/usb_descriptors.c ${CMAKE_CURRENT_LIST_DIR}/tasks.c ${CMAKE_CURRENT_LIST_DIR}/Analog/Analog.c ${CMAKE_CURRENT_LIST_DIR}/comms/i2c.c)
+target_sources(picopad PUBLIC ${CMAKE_CURRENT_LIST_DIR}/main.c ${CMAKE_CURRENT_LIST_DIR}/usb_descriptors.c
+        ${CMAKE_CURRENT_LIST_DIR}/tasks.c ${CMAKE_CURRENT_LIST_DIR}/lib/analog/analog.c ${CMAKE_CURRENT_LIST_DIR}/lib/i2c/i2c.c
+        ${CMAKE_CURRENT_LIST_DIR}/modes/GenericBox/GenericBox.c ${CMAKE_CURRENT_LIST_DIR}/modes/AnalogLever/NotSmashStick.c)
 target_include_directories(picopad PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
 pico_add_extra_outputs(picopad)

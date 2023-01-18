@@ -1,13 +1,7 @@
-#include "GenericBox.h"
-#if defined(MODE_GENERICBOX_18_BUTTONS) || defined(MODE_GENERICBOX_20_BUTTONS)
+#include "WasdBox.h"
+#if defined(MODE_WASDBOX)
 
-#if defined(MODE_GENERICBOX_18_BUTTONS)
-    #pragma message "Using Generic Box layout (18 buttons)"
-#endif
-
-#if defined(MODE_GENERICBOX_20_BUTTONS)
-    #pragma message "Using Generic Box layout (20 buttons)"
-#endif
+#pragma message "Using WASD-style Box layout"
 
 void doButtons(dummy_report_t* report)
 {

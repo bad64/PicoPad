@@ -6,13 +6,6 @@
 
 #include "hardware/adc.h"
 
-#include "config/config.h"
-//#pragma message "AnalogLever library v0.0.1"
-
-/****************************************************
- * General analog header to include in your project *
-*****************************************************/
-
 /* Axis struct */
 typedef struct {
     // Defines a 1-dimensional axis
@@ -54,7 +47,6 @@ typedef struct {
 
 int16_t initCoordsStruct(Coordinates* self);
 int16_t updateCoordinates(Coordinates* self);
-int16_t updateCoordinatesI2C(Coordinates* self, uint8_t xbuf, uint8_t ybuf);
 void recalibrate(Coordinates* self);
 
 long map(long x, long in_min, long in_max, long out_min, long out_max);
