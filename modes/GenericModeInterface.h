@@ -3,7 +3,6 @@
 
 #include <stdint.h>
 #include <config/config.h>
-#pragma message "cc"
 
 /* Pin definitions */
 //#define PINOUT_PROTOTYPE_BOARD

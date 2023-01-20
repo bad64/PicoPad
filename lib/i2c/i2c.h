@@ -1,5 +1,5 @@
-#ifndef COMMS_H
-#define COMMS_H
+#ifndef I2C_H
+#define I2C_H
 
 #include <stdint.h>
 #include "hardware/i2c.h"

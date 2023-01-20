@@ -13,7 +13,7 @@
 #endif
 
 #if defined(MODE_I2CSTICK)
-    #include "modes/Nunchuk/Nunchuk.h"
+    #include "modes/Nunchuk/NunchukBox.h"
 #endif
 
 // Debug stuff
@@ -70,8 +70,6 @@ int main(void)
     #endif
 
     #if defined(MODE_I2CSTICK)
-        mode_i2c_Nunchuk = 1;
-
         i2c_init(i2c0, 100 * 1000); // Init i2c @ 100KHz
 
         gpio_set_function(PIN_SDA, GPIO_FUNC_I2C);
