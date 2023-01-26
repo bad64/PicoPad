@@ -39,9 +39,9 @@
 #define INPUT_FGC_3K            PIN_3K
 #define INPUT_FGC_4K            PIN_4K
 
-#define INPUT_START             PIN_START
-#define INPUT_SELECT            -1
-#define INPUT_HOME              -1
+#define INPUT_FGC_START         PIN_START
+#define INPUT_FGC_SELECT        -1
+#define INPUT_FGC_HOME          -1
 
 // Analog values
 #define NEUTRAL                 127

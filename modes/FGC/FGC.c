@@ -31,7 +31,7 @@ uint16_t doButtonsFGC()
     else buttons &= MASK_ZL;
 
     // Other
-    if (gpio_get(INPUT_START) == 0) buttons |= MASK_START;
+    if (gpio_get(INPUT_FGC_START) == 0) buttons |= MASK_START;
     else buttons &= MASK_START;
 
     return buttons;

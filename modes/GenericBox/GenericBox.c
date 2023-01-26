@@ -10,7 +10,7 @@
 #endif
 
 #if defined(MODE_WASDBOX)
-    #pragma message "Using WASD-style Box layout"
+    #pragma message "Using WASD-style Box layout (20 buttons)"
 #endif
 
 uint16_t doButtons()

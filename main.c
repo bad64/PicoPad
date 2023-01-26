@@ -13,7 +13,14 @@
     #include "modes/Nunchuk/NunchukBox.h"
 #endif
 
-bool fgcMode = false;
+// Some warning suppression
+#ifndef INPUT_A
+    #define INPUT_A         -1
+#endif
+
+#ifndef INPUT_START
+    #define INPUT_START     -1
+#endif
 
 // Debug stuff
 int retval; // Old reliable !
@@ -25,6 +32,7 @@ void haltCatchFire(const char* msg, int errcode)
 
 // Useful variables
 pokken_controller_report_t report;
+bool fgcMode = false;
 
 int main(void)
 {  
