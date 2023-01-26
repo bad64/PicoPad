@@ -22,7 +22,7 @@
     #define INPUT_FGC_RIGHT     PIN_DPAD_RIGHT
 #endif
 
-#if defined(MODE_I2CSTICK) || defined(MODE_NOTSMASHSTICK)
+#if defined(MODE_I2CSTICK) || defined(MODE_ANALOGSTICK)
     #define INPUT_FGC_UP        -1
     #define INPUT_FGC_DOWN      -1
     #define INPUT_FGC_LEFT      -1

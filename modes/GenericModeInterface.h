@@ -53,6 +53,7 @@
 #define HAT_UP_LEFT         7
 
 // Analog values
+// TODO: Most of those are arbitrary, find a mathematical way to assign them
 #define NEUTRAL             127
 #define WALK_PERCENT        45
 #define TIPTOE_PERCENT      10
@@ -72,18 +73,6 @@
 #define RIGHT_MAX           255
 #define RIGHT_HALF          184
 #define RIGHT_MIN           139
-
-// Dummy report struct
-typedef struct TU_ATTR_PACKED
-{
-  uint16_t buttons;
-  uint8_t hat;
-  uint8_t x;
-  uint8_t y;
-  uint8_t z;
-  uint8_t rz;
-  uint8_t vendorSpec;
-} dummy_report_t;
 
 uint16_t doButtons();
 uint16_t doCStick();

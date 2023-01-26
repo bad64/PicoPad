@@ -15,8 +15,8 @@
 /* Mode definitions */
 //#define MODE_GENERICBOX_18_BUTTONS
 //#define MODE_GENERICBOX_20_BUTTONS
-#define MODE_WASDBOX
-//#define MODE_NOTSMASHSTICK
+//#define MODE_WASDBOX
+//#define MODE_ANALOGSTICK
 //#define MODE_I2CSTICK
 
 // TODO
@@ -27,12 +27,12 @@
                         // and make TOs really really angry
 
 #if !defined(MODE_GENERICBOX_18_BUTTONS) && !defined(MODE_GENERICBOX_20_BUTTONS) && !defined(MODE_WASDBOX) \
-                && !defined(MODE_I2CSTICK) && !defined(MODE_NOTSMASHSTICK)
+                && !defined(MODE_I2CSTICK) && !defined(MODE_ANALOGSTICK)
     #error "Please select a mode configuration in config/config.h"
 #endif
 
 /* Analog users: Select your joystick here */
-#if defined(MODE_NOTSMASHSTICK)
+#if defined(MODE_ANALOGSTICK)
     /* Lever selection compile-time defines */
     //#define LEVER_JLM
     //#define LEVER_U360

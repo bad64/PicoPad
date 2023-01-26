@@ -5,8 +5,8 @@
     #include "modes/GenericBox/GenericBox.h"
 #endif
 
-#if defined(MODE_NOTSMASHSTICK)
-    #include "modes/AnalogLever/NotSmashStick.h"
+#if defined(MODE_ANALOGSTICK)
+    #include "modes/AnalogLever/ANALOGSTICK.h"
 #endif
 
 #if defined(MODE_I2CSTICK)
@@ -76,7 +76,7 @@ int main(void)
     gpio_set_dir(22, GPIO_IN);
     gpio_pull_up(22);
 
-    #if defined(MODE_NOTSMASHSTICK)
+    #if defined(MODE_ANALOGSTICK)
         // Init analog pins
         adc_init();
         adc_gpio_init(26);
@@ -84,14 +84,8 @@ int main(void)
         adc_gpio_init(28);
 
         sleep_ms(50);
-
-        // Init analog struct
-        //retval = initCoordsStruct(&coords);
-        //if (retval != 0)
-        //{
-        //    haltCatchFire("Error initializing coordinates struct !", retval);
-        //}
     #else
+        // We don't need analog, let them be normal I/O pins
         gpio_init(26);
         gpio_set_dir(26, GPIO_IN);
         gpio_pull_up(26);
@@ -174,7 +168,8 @@ int main(void)
                 }
             }
         #endif
-        #if defined(MODE_NOTSMASHSTICK)
+        #if defined(MODE_ANALOGSTICK)
+            // TODO
             doLeftStick((dummy_report_t*)&report);
         #endif
         

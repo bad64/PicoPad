@@ -1,6 +1,8 @@
 #ifndef PINOUT_H
 #define PINOUT_H
 
+/* Will be deprecated shortly after board release */
+
 #pragma message "Using prototype pinout"
 
 #define PIN_DPAD_DOWN       0

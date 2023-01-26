@@ -1,7 +1,7 @@
 #include "analog.h"
 #include <stdlib.h>
 
-#if defined(MODE_NOTSMASHSTICK)
+#if defined(MODE_ANALOGSTICK)
 
 #define PI                  3.1416
 #define NUMBER_OF_SAMPLES   10

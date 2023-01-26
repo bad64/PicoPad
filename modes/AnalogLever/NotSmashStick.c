@@ -1,42 +1,42 @@
 #include "NotSmashStick.h"
-#if defined(MODE_NOTSMASHSTICK)
+#if defined(MODE_ANALOGSTICK)
 
 #if defined(LEVER_JLM)
-    #pragma message "Using NotSmashStick config w/ Sanwa JLM lever configuration template"
+    #pragma message "Using ANALOGSTICK config w/ Sanwa JLM lever configuration template"
 #endif
 
 #if defined(LEVER_U360)
-    #pragma message "Using NotSmashStick config w/ Ultrastik U360 lever configuration template"
+    #pragma message "Using ANALOGSTICK config w/ Ultrastik U360 lever configuration template"
 #endif
 
 void doButtons(dummy_report_t* report)
 {
     if (gpio_get(INPUT_A) == 0) report->buttons |= MASK_A;
-    else if (gpio_get(INPUT_A) >= 1) report->buttons &= MASK_A;
+    else report->buttons &= MASK_A;
 
     if (gpio_get(INPUT_B) == 0) report->buttons |= MASK_B;
-    else if (gpio_get(INPUT_B) >= 1) report->buttons &= MASK_B;
+    else report->buttons &= MASK_B;
 
     if (gpio_get(INPUT_X) == 0) report->buttons |= MASK_X;
-    else if (gpio_get(INPUT_X) >= 1) report->buttons &= MASK_X;
+    else report->buttons &= MASK_X;
 
     if (gpio_get(INPUT_Y) == 0) report->buttons |= MASK_Y;
-    else if (gpio_get(INPUT_Y) >= 1) report->buttons &= MASK_Y;
+    else report->buttons &= MASK_Y;
 
     if (gpio_get(INPUT_R) == 0) report->buttons |= MASK_R;
-    else if (gpio_get(INPUT_R) >= 1) report->buttons &= MASK_R;
+    else report->buttons &= MASK_R;
 
     if (gpio_get(INPUT_L) == 0) report->buttons |= MASK_L;
-    else if (gpio_get(INPUT_L) >= 1) report->buttons &= MASK_L;
+    else report->buttons &= MASK_L;
 
     if (gpio_get(INPUT_ZR) == 0) report->buttons |= MASK_ZR;
-    else if (gpio_get(INPUT_ZR) >= 1) report->buttons &= MASK_ZR;
+    else report->buttons &= MASK_ZR;
 
     if (gpio_get(PIN_START) == 0) report->buttons |= MASK_START;
-    else if (gpio_get(PIN_START) >= 1) report->buttons &= ~MASK_START;
+    else report->buttons &= ~MASK_START;
 
     if (gpio_get(PIN_HOME) == 0) report->buttons |= MASK_HOME;
-    else if (gpio_get(PIN_HOME) >= 1) report->buttons &= ~MASK_HOME;
+    else report->buttons &= ~MASK_HOME;
 }
 
 void doCStick(dummy_report_t* report)

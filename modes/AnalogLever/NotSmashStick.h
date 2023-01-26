@@ -1,5 +1,5 @@
-#ifndef NOTSMASHSTICK_H
-#define NOTSMASHSTICK_H
+#ifndef ANALOGSTICK_H
+#define ANALOGSTICK_H
 
 #include "../GenericModeInterface.h"
 #include <lib/analog/analog.h>

@@ -1,6 +1,8 @@
 #ifndef PINOUT_H
 #define PINOUT_H
 
+/* Will be deprecated shortly after board release */
+
 #pragma message "Using emergency pinout"
 
 #define PIN_DPAD_DOWN       2
