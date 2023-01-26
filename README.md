@@ -20,8 +20,6 @@ The following modes are available to select from:
 
 ## What's next ?
 
-* Maybe merging GenericBox && WASDBox ?
-* FGC Mode
 * Documentation
     * End-user manual
     * Mode-specific documentation

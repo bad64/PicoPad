@@ -1,5 +1,5 @@
 #include "GenericBox.h"
-#if defined(MODE_GENERICBOX_18_BUTTONS) || defined(MODE_GENERICBOX_20_BUTTONS)
+#if defined(MODE_GENERICBOX_18_BUTTONS) || defined(MODE_GENERICBOX_20_BUTTONS) || defined(MODE_WASDBOX)
 
 #if defined(MODE_GENERICBOX_18_BUTTONS)
     #pragma message "Using Generic Box layout (18 buttons)"
@@ -9,33 +9,37 @@
     #pragma message "Using Generic Box layout (20 buttons)"
 #endif
 
+#if defined(MODE_WASDBOX)
+    #pragma message "Using WASD-style Box layout"
+#endif
+
 uint16_t doButtons()
 {
-    static uint16_t buttons = 0;
+    static uint16_t buttons;
 
     if (gpio_get(INPUT_A) == 0) buttons |= MASK_A;
-    else if (gpio_get(INPUT_A) >= 1) buttons &= MASK_A;
+    else buttons &= MASK_A;
     
     if (gpio_get(INPUT_B) == 0) buttons |= MASK_B;
-    else if (gpio_get(INPUT_B) >= 1) buttons &= MASK_B;
+    else buttons &= MASK_B;
 
     if (gpio_get(INPUT_X) == 0) buttons |= MASK_X;
-    else if (gpio_get(INPUT_X) >= 1) buttons &= MASK_X;
+    else buttons &= MASK_X;
 
     if (gpio_get(INPUT_Y) == 0) buttons |= MASK_Y;
-    else if (gpio_get(INPUT_Y) >= 1) buttons &= MASK_Y;
+    else buttons &= MASK_Y;
 
     if (gpio_get(INPUT_R) == 0) buttons |= MASK_R;
-    else if (gpio_get(INPUT_R) >= 1) buttons &= MASK_R;
+    else buttons &= MASK_R;
 
     if (gpio_get(INPUT_L) == 0) buttons |= MASK_L;
-    else if (gpio_get(INPUT_L) >= 1) buttons &= MASK_L;
+    else buttons &= MASK_L;
 
     if (gpio_get(INPUT_ZR) == 0) buttons |= MASK_ZR;
-    else if (gpio_get(INPUT_ZR) >= 1) buttons &= MASK_ZR;
+    else buttons &= MASK_ZR;
 
     if (gpio_get(INPUT_START) == 0) buttons |= MASK_START;
-    else if (gpio_get(INPUT_START) >= 1) buttons &= MASK_START;
+    else buttons &= MASK_START;
 
     // TODO: Mid && Light shields for GC ?
 

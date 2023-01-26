@@ -1,12 +1,8 @@
 #include <config/config.h>
 #include "modes/FGC/FGC.h"
 
-#if defined(MODE_GENERICBOX_18_BUTTONS) || defined(MODE_GENERICBOX_20_BUTTONS)
+#if defined(MODE_GENERICBOX_18_BUTTONS) || defined(MODE_GENERICBOX_20_BUTTONS) || defined(MODE_WASDBOX)
     #include "modes/GenericBox/GenericBox.h"
-#endif
-
-#if defined(MODE_WASDBOX)
-    #include "modes/WASDBox/WasdBox.h"
 #endif
 
 #if defined(MODE_NOTSMASHSTICK)
@@ -153,6 +149,7 @@ int main(void)
         #if defined(MODE_GENERICBOX_18_BUTTONS) || defined(MODE_GENERICBOX_20_BUTTONS) || defined(MODE_WASDBOX)
             if (fgcMode == true)
             {
+                // Center the analog, we d-pad now
                 report.x = NEUTRAL;
                 report.y = NEUTRAL;
                     
