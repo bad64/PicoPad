@@ -2,7 +2,7 @@
 #define NUNCHUKBOX_H
 
 #include "../GenericModeInterface.h"
-#include <lib/i2c/i2c.c>
+#include <lib/i2c/i2c.h>
 
 #define INPUT_UP        -1
 #define INPUT_DOWN      -1
@@ -55,9 +55,5 @@
 #define RIGHT_MAX       255;
 #define RIGHT_HALF      NEUTRAL + (NEUTRAL * (WALK_PERCENT/100));
 #define RIGHT_MIN       NEUTRAL + (NEUTRAL * (TIPTOE_PERCENT/100));
-
-void doButtons(dummy_report_t* report);
-void doLeftStick(dummy_report_t* report);
-void doCStick(dummy_report_t* report);
 
 #endif

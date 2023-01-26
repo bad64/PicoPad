@@ -57,8 +57,4 @@
 #define RIGHT_HALF      NEUTRAL + (NEUTRAL * (WALK_PERCENT/100));
 #define RIGHT_MIN       NEUTRAL + (NEUTRAL * (TIPTOE_PERCENT/100));
 
-void doButtons(dummy_report_t* report);
-void doLeftStick(dummy_report_t* report);
-void doCStick(dummy_report_t* report);
-
 #endif

@@ -85,7 +85,27 @@ void doLeftStick(dummy_report_t* report)
 {
     if (gpio_get(INPUT_LS_DP) == 0)                                         // Dpad mode
     {
+            report->x = NEUTRAL;
+            report->y = NEUTRAL;
 
+            if ((gpio_get(INPUT_UP) == 0) && (gpio_get(INPUT_DOWN) >= 1))
+            {
+                if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1)) report->hat = HAT_UP_LEFT;
+                else if ((gpio_get(INPUT_LEFT) >= 1) && (gpio_get(INPUT_RIGHT) == 0)) report->hat = HAT_UP_RIGHT;
+                else report->hat = HAT_UP;
+            }
+            else if ((gpio_get(INPUT_UP) >= 1) && (gpio_get(INPUT_DOWN) == 0))
+            {
+                if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1)) report->hat = HAT_DOWN_LEFT;
+                else if ((gpio_get(INPUT_LEFT) >= 1) && (gpio_get(INPUT_RIGHT) == 0)) report->hat = HAT_DOWN_RIGHT;
+                else report->hat = HAT_DOWN;
+            }
+            else
+            {
+                if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1)) report->hat = HAT_LEFT;
+                else if ((gpio_get(INPUT_LEFT) >= 1) && (gpio_get(INPUT_RIGHT) == 0)) report->hat = HAT_RIGHT;
+                else report->hat = HAT_NEUTRAL;
+            }
     }
     else if (gpio_get(INPUT_LS_DP) >= 1)                                    // Analog mode
     {

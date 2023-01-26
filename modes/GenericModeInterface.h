@@ -60,4 +60,8 @@ typedef struct TU_ATTR_PACKED
   uint8_t vendorSpec;
 } dummy_report_t;
 
+void doButtons(dummy_report_t* report);
+void doLeftStick(dummy_report_t* report);
+void doCStick(dummy_report_t* report);
+
 #endif
