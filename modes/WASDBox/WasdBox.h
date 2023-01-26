@@ -31,28 +31,7 @@
 #define INPUT_MODX      PIN_MODX
 #define INPUT_MODY      PIN_MODY
 
-#define INPUT_MS    PIN_3P
-#define INPUT_LS    PIN_4P
-
-// Analog values
-#define NEUTRAL         127
-#define WALK_PERCENT    45
-#define TIPTOE_PERCENT  10
-
-#define UP_MAX          0;
-#define UP_HALF         NEUTRAL - (NEUTRAL * (WALK_PERCENT/100));
-#define UP_MIN          NEUTRAL - (NEUTRAL * (TIPTOE_PERCENT/100));
-
-#define DOWN_MAX        255;
-#define DOWN_HALF       NEUTRAL + (NEUTRAL * (WALK_PERCENT/100));
-#define DOWN_MIN        NEUTRAL + (NEUTRAL * (TIPTOE_PERCENT/100));
-
-#define LEFT_MAX        0;
-#define LEFT_HALF       NEUTRAL - (NEUTRAL * (WALK_PERCENT/100));
-#define LEFT_MIN        NEUTRAL - (NEUTRAL * (TIPTOE_PERCENT/100));
-
-#define RIGHT_MAX       255;
-#define RIGHT_HALF      NEUTRAL + (NEUTRAL * (WALK_PERCENT/100));
-#define RIGHT_MIN       NEUTRAL + (NEUTRAL * (TIPTOE_PERCENT/100));
+#define INPUT_MS        PIN_3P
+#define INPUT_LS        PIN_4P
 
 #endif

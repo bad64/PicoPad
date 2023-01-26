@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "board.h": "c",
-        "pinout_final.h": "c"
+        "pinout_final.h": "c",
+        "new": "c"
     }
 }

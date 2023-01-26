@@ -46,7 +46,7 @@
 // Analog values
 #define NEUTRAL                 127
 
-void doButtonsFGC(dummy_report_t* report);
-void doLeftStickFGC_AllButtons(dummy_report_t* report);
+uint16_t doButtonsFGC();
+uint8_t doLeftStickFGC_AllButtons();
 
 #endif

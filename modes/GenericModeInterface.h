@@ -6,16 +6,20 @@
 
 /* Pin definitions */
 //#define PINOUT_PROTOTYPE_BOARD
-#define PINOUT_FINAL_BOARD
+//#define PINOUT_FINAL_BOARD
+#define PINOUT_TEST
 
 #if defined(PINOUT_PROTOTYPE_BOARD)
     #include <config/pinout_prototype.h>
+#endif
+#if defined(PINOUT_TEST)
+    #include <config/pinout_emergency.h>
 #endif
 #if defined (PINOUT_FINAL_BOARD)
     #include <config/pinout_final.h>
 #endif
 
-#if !defined(PINOUT_PROTOTYPE_BOARD) && !defined(PINOUT_FINAL_BOARD)
+#if !defined(PINOUT_PROTOTYPE_BOARD) && !defined(PINOUT_TEST) && !defined(PINOUT_FINAL_BOARD)
     #error "Please select a board configuration in config/config.h"
 #endif
 
@@ -48,6 +52,27 @@
 #define HAT_LEFT            6
 #define HAT_UP_LEFT         7
 
+// Analog values
+#define NEUTRAL             127
+#define WALK_PERCENT        45
+#define TIPTOE_PERCENT      10
+
+#define UP_MAX              0
+#define UP_HALF             69
+#define UP_MIN              110
+
+#define DOWN_MAX            255
+#define DOWN_HALF           184
+#define DOWN_MIN            139
+
+#define LEFT_MAX            0
+#define LEFT_HALF           69
+#define LEFT_MIN            110
+
+#define RIGHT_MAX           255
+#define RIGHT_HALF          184
+#define RIGHT_MIN           139
+
 // Dummy report struct
 typedef struct TU_ATTR_PACKED
 {
@@ -60,8 +85,9 @@ typedef struct TU_ATTR_PACKED
   uint8_t vendorSpec;
 } dummy_report_t;
 
-void doButtons(dummy_report_t* report);
-void doLeftStick(dummy_report_t* report);
-void doCStick(dummy_report_t* report);
+uint16_t doButtons();
+uint16_t doCStick();
+uint8_t doHat();
+uint16_t doLeftStick();
 
 #endif
