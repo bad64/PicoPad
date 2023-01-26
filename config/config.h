@@ -19,6 +19,13 @@
 //#define MODE_NOTSMASHSTICK
 //#define MODE_I2CSTICK
 
+// TODO
+/* All-button users: SOCD cleaning selection */
+//#define SOCD_LRN      // Left + Right = Neutral (default)
+//#define SOCD_2IP      // Last input wins
+//#define SOCD_LMAO     // No cleaning; let the game figure it out
+                        // and make TOs really really angry
+
 #if !defined(MODE_GENERICBOX_18_BUTTONS) && !defined(MODE_GENERICBOX_20_BUTTONS) && !defined(MODE_WASDBOX) \
                 && !defined(MODE_I2CSTICK) && !defined(MODE_NOTSMASHSTICK)
     #error "Please select a mode configuration in config/config.h"

@@ -1,4 +1,5 @@
 #include <config/config.h>
+#include "modes/FGC/FGC.h"
 
 #if defined(MODE_GENERICBOX_18_BUTTONS) || defined(MODE_GENERICBOX_20_BUTTONS)
     #include "modes/GenericBox/GenericBox.h"
@@ -15,6 +16,8 @@
 #if defined(MODE_I2CSTICK)
     #include "modes/Nunchuk/NunchukBox.h"
 #endif
+
+bool fgcMode = false;
 
 // Debug stuff
 int retval; // Old reliable !
@@ -80,6 +83,9 @@ int main(void)
 
     // Bootsel
     if (gpio_get(INPUT_START) == 0) reset_usb_boot(0, 0);
+
+    // FGC mode ?
+    if (gpio_get(INPUT_A) == 0) fgcMode = true;
     
     // Init USB
     board_init();
@@ -100,14 +106,16 @@ int main(void)
 
         // Read input into appropriate struct
         // Buttons first
-        doButtons((dummy_report_t*)&report);
+        if (!(fgcMode)) doButtons((dummy_report_t*)&report);
+        else doButtonsFGC((dummy_report_t*)&report);
 
         // C-Stick
-        doCStick((dummy_report_t*)&report);
+        if (!(fgcMode)) doCStick((dummy_report_t*)&report);
 
         // Then directions
         #if defined(MODE_GENERICBOX_18_BUTTONS) || defined(MODE_GENERICBOX_20_BUTTONS) || defined(MODE_WASDBOX)
-            doLeftStick((dummy_report_t*)&report);
+            if (!(fgcMode)) doLeftStick((dummy_report_t*)&report);
+            else doLeftStickFGC_AllButtons((dummy_report_t*)&report);
         #endif
         #if defined(MODE_NOTSMASHSTICK)
             doLeftStick((dummy_report_t*)&report);

@@ -17,7 +17,9 @@ target_sources(picopad PUBLIC ${CMAKE_CURRENT_LIST_DIR}/main.c
         ${CMAKE_CURRENT_LIST_DIR}/usb_descriptors.c ${CMAKE_CURRENT_LIST_DIR}/tasks.c
         ${CMAKE_CURRENT_LIST_DIR}/lib/analog/analog.c ${CMAKE_CURRENT_LIST_DIR}/lib/i2c/i2c.c
         ${CMAKE_CURRENT_LIST_DIR}/modes/GenericBox/GenericBox.c ${CMAKE_CURRENT_LIST_DIR}/modes/WASDBox/WasdBox.c
-        ${CMAKE_CURRENT_LIST_DIR}/modes/AnalogLever/NotSmashStick.c ${CMAKE_CURRENT_LIST_DIR}/modes/Nunchuk/NunchukBox.c)
+        ${CMAKE_CURRENT_LIST_DIR}/modes/AnalogLever/NotSmashStick.c ${CMAKE_CURRENT_LIST_DIR}/modes/Nunchuk/NunchukBox.c
+        ${CMAKE_CURRENT_LIST_DIR}/modes/FGC/FGC.c)
+
 target_include_directories(picopad PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
 pico_add_extra_outputs(picopad)
