@@ -1,4 +1,8 @@
-[![Open Source? Yes!](https://badgen.net/badge/Open%20Source%20%3F/Yes%21/blue?icon=github)](https://github.com/Naereen/badges/) [![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://lbesson.mit-license.org/) [![Visual Studio Code](https://img.shields.io/badge/--007ACC?logo=visual%20studio%20code&logoColor=ffffff)](https://code.visualstudio.com/) ![C](https://img.shields.io/badge/c-%2300599C.svg?style=for-the-badge&logo=c&logoColor=white) ![Raspberry Pi](https://img.shields.io/badge/-RaspberryPi-C51A4A?style=for-the-badge&logo=Raspberry-Pi) ![Steam](https://img.shields.io/badge/steam-%23000000.svg?style=for-the-badge&logo=steam&logoColor=white) ![Switch](https://img.shields.io/badge/Switch-E60012?style=for-the-badge&logo=nintendo-switch&logoColor=white) [![Awesome Badges](https://img.shields.io/badge/badges-awesome-green.svg)](https://github.com/Naereen/badges)
+[![Open Source? Yes!](https://badgen.net/badge/Open%20Source%20%3F/Yes%21/blue?icon=github)](https://github.com/Naereen/badges/) [![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://lbesson.mit-license.org/) [![Visual Studio Code](https://img.shields.io/badge/--007ACC?logo=visual%20studio%20code&logoColor=ffffff)](https://code.visualstudio.com/)
+Written in: ![C](https://img.shields.io/badge/c-%2300599C.svg?style=for-the-badge&logo=c&logoColor=white) 
+Powered by: ![Raspberry Pi](https://img.shields.io/badge/-RaspberryPi-C51A4A?style=for-the-badge&logo=Raspberry-Pi)
+Platforms: ![Steam](https://img.shields.io/badge/steam-%23000000.svg?style=for-the-badge&logo=steam&logoColor=white) ![Switch](https://img.shields.io/badge/Switch-E60012?style=for-the-badge&logo=nintendo-switch&logoColor=white)
+[![Awesome Badges](https://img.shields.io/badge/badges-awesome-green.svg)](https://github.com/Naereen/badges)
 
 # Multi Purpose Box Firmware
 
@@ -38,18 +42,18 @@ The following modes are available to select from:
 ## Status
 
 * All-button:       ![](https://geps.dev/progress/90)
-    * ⮑ Issue with action buttons not sticking (presumably general)
+    * └ Issue with action buttons not sticking (presumably general)
 * Analog:           ![](https://geps.dev/progress/90)
-    * ⮑ Analog code complete, needs testing
+    * └ Analog code complete, needs testing
 * I2C:              ![](https://geps.dev/progress/50)
-    * ⮑ No analog to digital yet
-    * ⮑ Needs testing
+    * └ No analog to digital yet
+    * └ Needs testing
 * SOCD modes:       ![](https://geps.dev/progress/00)
-    * ⮑ Not started yet
+    * └ Not started yet
 * Gamecube mode:    ![](https://geps.dev/progress/00)
-    * ⮑ Not started yet
-* Documentation:    ![](https://geps.dev/progress/10)
-    * ⮑ Aside from this README there isn't much
+    * └ Not started yet
+* Documentation:    ![](https://geps.dev/progress/33)
+    * └ Aside from this README there isn't much substance (unless you count the anti-nerf manifesto)
 
 ## What's next ?
 
@@ -68,6 +72,7 @@ These people contributed in some way in kicking my ass through this project, or 
 * [AltLabs](http://www.altlabcontrollers.com/) for inspiring this whole project really
 * [Haystack](https://github.com/JonnyHaystack/HayBox) for explaining USB like I'm five at a time where I really needed it, and for having a working implementation of the Nunchuk
 * [Hadoe](https://github.com/HTangl/Model-UD) for the Model-UD schematic
+* [Myrzon](https://www.etsy.com/shop/MyrzArcade?ref=simple-shop-header-name&listing_id=816502018) for the [panel mounted Nunchuk port](https://www.etsy.com/listing/816502018/nunchuk-controller-pass-through-breakout)
 * [BitBang](https://bitbanggaming.com/) for teaching me the basics of embedded software development and PCB design
 * [Kayane](https://twitter.com/kayane) for inspiring me to keep modding fightsticks
 * The Mad Goose Labs for continuously wowing me with their insane projects

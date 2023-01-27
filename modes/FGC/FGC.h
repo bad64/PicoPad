@@ -29,6 +29,15 @@
     #define INPUT_FGC_RIGHT     -1
 #endif
 
+// Warning suppression
+#if !defined(MODE_GENERICBOX_18_BUTTONS) || !defined(MODE_GENERICBOX_20_BUTTONS) || !defined(MODE_WASDBOX) \
+    || !defined(MODE_I2CSTICK) || !defined(MODE_ANALOGSTICK)
+    #define INPUT_FGC_UP        -1
+    #define INPUT_FGC_DOWN      -1
+    #define INPUT_FGC_LEFT      -1
+    #define INPUT_FGC_RIGHT     -1
+#endif
+
 #define INPUT_FGC_1P            PIN_1P
 #define INPUT_FGC_2P            PIN_2P
 #define INPUT_FGC_3P            PIN_3P

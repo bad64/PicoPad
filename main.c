@@ -68,7 +68,7 @@ int main(void)
         gpio_pull_up(17);
     #endif
 
-    for (int i = 18, i < 23; i++)
+    for (int i = 18; i < 23; i++)
     {
         gpio_init(i);
         gpio_set_dir(i, GPIO_IN);
