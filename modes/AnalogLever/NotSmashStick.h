@@ -35,4 +35,6 @@
 #define INPUT_MS        -1
 #define INPUT_LS        -1
 
+uint8_t doHatAnalog(uint16_t r, uint16_t dpadThreshhold, double deg);
+
 #endif

@@ -6,7 +6,7 @@
 #endif
 
 #if defined(MODE_ANALOGSTICK)
-    #include "modes/AnalogLever/ANALOGSTICK.h"
+    #include "modes/AnalogLever/NotSmashStick.h"
 #endif
 
 #if defined(MODE_I2CSTICK)
@@ -54,6 +54,10 @@ int main(void)
         gpio_set_function(PIN_SCL, GPIO_FUNC_I2C);
         gpio_pull_up(PIN_SDA);
         gpio_pull_up(PIN_SCL);
+
+        I2C_STATE i2cState;
+        uint8_t i2cDataBuf[6];
+        uint8_t i2cWatchdog;
     #else
         gpio_init(16);
         gpio_set_dir(16, GPIO_IN);
@@ -64,25 +68,12 @@ int main(void)
         gpio_pull_up(17);
     #endif
 
-    gpio_init(18);
-    gpio_set_dir(18, GPIO_IN);
-    gpio_pull_up(18);
-    
-    gpio_init(19);
-    gpio_set_dir(19, GPIO_IN);
-    gpio_pull_up(19);
-
-    gpio_init(20);
-    gpio_set_dir(20, GPIO_IN);
-    gpio_pull_up(20);
-
-    gpio_init(21);
-    gpio_set_dir(21, GPIO_IN);
-    gpio_pull_up(21);
-
-    gpio_init(22);
-    gpio_set_dir(22, GPIO_IN);
-    gpio_pull_up(22);
+    for (int i = 18, i < 23; i++)
+    {
+        gpio_init(i);
+        gpio_set_dir(i, GPIO_IN);
+        gpio_pull_up(i);
+    }
 
     #if defined(MODE_ANALOGSTICK)
         // Init analog pins
@@ -92,6 +83,10 @@ int main(void)
         adc_gpio_init(28);
 
         sleep_ms(50);
+
+        Coordinates coords;
+        retval = initCoordsStruct(&coords);
+        if (retval != 0) haltCatchFire("Error initializing coordinates struct !", retval); 
     #else
         // We don't need analog, let them be normal I/O pins
         gpio_init(26);
@@ -177,8 +172,47 @@ int main(void)
             }
         #endif
         #if defined(MODE_ANALOGSTICK)
-            // TODO
-            doLeftStick((dummy_report_t*)&report);
+            // TODO: Recalibration
+            updateCoordinates(&coords);
+
+            if (gpio_get(INPUT_LS_DP) == 0)
+            {
+                report.x = 0;
+                report.y = 0;
+
+                report.hat = doHatAnalog(coords.polar.r, coords.polar.dpadThreshhold, coords.polar.deg);
+            }
+            else
+            {
+                report.hat = HAT_NEUTRAL;
+
+                report.x = (uint8_t)coords.x;
+                report.y = (uint8_t)coords.y;
+            }
+        #endif
+        #if defined(MODE_I2CSTICK)
+            i2cWatchdog = i2cStateMachine(&i2cState, i2cDataBuf);
+
+            if (i2cWatchdog == PICO_ERROR_GENERIC) reset_usb_boot(0, 0);
+            else if (i2cWatchdog == PICO_ERROR_TIMEOUT) reset_usb_boot(0, 0);
+            else
+            {
+                if (gpio_get(INPUT_LS_DP) == 0)
+                {
+                    report.x = 0;
+                    report.y = 0;
+
+                    // TODO
+                }
+                else
+                {
+                    report.hat = HAT_NEUTRAL;
+
+                    report.x = (uint8_t)i2cDataBuf[0];
+                    report.y = (uint8_t)i2cDataBuf[1];
+                }
+                // TODO: Button handler ?
+            }
         #endif
         
         // Send to host

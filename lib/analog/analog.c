@@ -1,10 +1,18 @@
 #include "analog.h"
+#include <config/config.h>
 #include <stdlib.h>
 
-#if defined(MODE_ANALOGSTICK)
+#define PI                      3.1416
+#define NUMBER_OF_SAMPLES       10
 
-#define PI                  3.1416
-#define NUMBER_OF_SAMPLES   10
+// Warning suppression
+#ifndef DEADZONE
+    #define DEADZONE            0
+#endif
+
+#ifndef REVERSE_DEADZONE
+    #define REVERSE_DEADZONE    0
+#endif
 
 long map(long x, long in_min, long in_max, long out_min, long out_max)
 {
@@ -181,5 +189,3 @@ void recalibrate(Coordinates* self)
 {
     initCoordsStruct(self);
 }
-
-#endif

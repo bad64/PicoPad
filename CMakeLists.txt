@@ -8,8 +8,14 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_BUILD_TYPE Release)
 
-# TODO: Figure out what this warning means to properly fix it
-#set(CMAKE_CXX_FLAGS "-Wl,--no-warn-rwx-segment")
+message("🛈 CMAKE_VERSION:              ${CMAKE_VERSION}")
+if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.25.1)
+        # TODO: Figure out what this warning means to properly fix it
+        message("       ⮑ Suppressing RWX segment warning")
+        set(CMAKE_CXX_FLAGS "-Wl,--no-warn-rwx-segment")
+endif ()
+message("🛈 CMAKE_SYSTEM_INFO_FILE:     ${CMAKE_SYSTEM_INFO_FILE}")
+message("🛈 CMAKE_SYSTEM_NAME:          ${CMAKE_SYSTEM_NAME}")
 
 pico_sdk_init()
 

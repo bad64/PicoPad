@@ -4,7 +4,7 @@
 #include "../GenericModeInterface.h"
 
 // SOCD default check
-#if !defined(SOCD_LRN) && !defined(SOCD_2IP) && !defined(SOCD_LMAO)
+#if !defined(SOCD_LRN) && !defined(SOCD_2IP) && !defined(SOCD_YOLO)
     #define SOCD_LRN
 #endif
 
