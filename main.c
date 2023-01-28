@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <config/config.h>
 #include "modes/FGC/FGC.h"
 
@@ -132,6 +133,7 @@ int main(void)
         // Buttons first
         if (fgcMode == true) report.buttons = doButtonsFGC();
         else report.buttons = doButtons();
+        printf("%d\r\n", report.buttons);
 
         // C-Stick
         if (fgcMode == true) { ;; }     // FGC don't need no right stick yo

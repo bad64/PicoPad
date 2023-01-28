@@ -15,31 +15,27 @@
 
 uint16_t doButtons()
 {
-    static uint16_t buttons;
+    uint16_t buttons = 0;
 
     if (gpio_get(INPUT_A) == 0) buttons |= MASK_A;
-    else buttons &= MASK_A;
-    
     if (gpio_get(INPUT_B) == 0) buttons |= MASK_B;
-    else buttons &= MASK_B;
-
     if (gpio_get(INPUT_X) == 0) buttons |= MASK_X;
-    else buttons &= MASK_X;
-
     if (gpio_get(INPUT_Y) == 0) buttons |= MASK_Y;
-    else buttons &= MASK_Y;
-
     if (gpio_get(INPUT_R) == 0) buttons |= MASK_R;
-    else buttons &= MASK_R;
-
     if (gpio_get(INPUT_L) == 0) buttons |= MASK_L;
-    else buttons &= MASK_L;
-
     if (gpio_get(INPUT_ZR) == 0) buttons |= MASK_ZR;
-    else buttons &= MASK_ZR;
 
-    if (gpio_get(INPUT_START) == 0) buttons |= MASK_START;
-    else buttons &= MASK_START;
+    if (gpio_get(INPUT_START) == 0)
+    {
+        if ((gpio_get(INPUT_MODX) == 0) && (gpio_get(INPUT_MODY) >= 1)) buttons |= MASK_SELECT;
+        else if ((gpio_get(INPUT_MODX) >= 1) && (gpio_get(INPUT_MODY) == 0)) buttons |= MASK_HOME;
+        else if ((gpio_get(INPUT_MODX) == 0) && (gpio_get(INPUT_MODY) == 0))
+        {
+            buttons |= MASK_START;
+            buttons |= MASK_SELECT;
+        }
+        else if ((gpio_get(INPUT_MODX) >= 1) && (gpio_get(INPUT_MODY) >= 1)) buttons |= MASK_START;
+    }
 
     // TODO: Mid && Light shields for GC ?
 

@@ -31,3 +31,6 @@ target_include_directories(picopad PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
 pico_add_extra_outputs(picopad)
 target_link_libraries(picopad pico_stdlib hardware_adc hardware_i2c tinyusb_device tinyusb_board pico_bootrom pico_bootsel_via_double_reset)
+
+pico_enable_stdio_usb(picopad 1)
+pico_enable_stdio_uart(picopad 0)
