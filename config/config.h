@@ -13,7 +13,7 @@
 #include "tasks.h"
 
 /* Mode definitions */
-#define MODE_GENERICBOX_18_BUTTONS
+//#define MODE_GENERICBOX_18_BUTTONS
 //#define MODE_GENERICBOX_20_BUTTONS
 //#define MODE_WASDBOX
 //#define MODE_ANALOGSTICK
