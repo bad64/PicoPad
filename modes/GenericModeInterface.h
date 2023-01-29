@@ -52,6 +52,11 @@
 #define HAT_LEFT            6
 #define HAT_UP_LEFT         7
 
+// SOCD stuff
+#define SOCD_LAST_NONE      0
+#define SOCD_LAST_LEFT      1
+#define SOCD_LAST_RIGHT     2
+
 // Analog values
 // TODO: Most of those are arbitrary, find a mathematical way to assign them
 #define NEUTRAL             127

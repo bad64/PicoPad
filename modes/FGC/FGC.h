@@ -10,15 +10,15 @@
 
 #if defined(MODE_GENERICBOX_18_BUTTONS) || defined(MODE_GENERICBOX_20_BUTTONS) || defined(MODE_WASDBOX)
     #if defined(MODE_GENERICBOX_18_BUTTONS) || defined(MODE_GENERICBOX_20_BUTTONS)
-        #define INPUT_FGC_UP    PIN_MODX
+        #define INPUT_FGC_UP    PIN_SELECT
     #endif
     
     #if defined(MODE_WASDBOX)
-        #define INPUT_FGC_UP    PIN_DPAD_UP
+        #define INPUT_FGC_UP    PIN_SELECT
     #endif
 
     #define INPUT_FGC_DOWN      PIN_DPAD_DOWN
-    #define INPUT_FGC_LEFT      PIN_DPAD_LEFT
+    #define INPUT_FGC_LEFT      PIN_DPAD_UP
     #define INPUT_FGC_RIGHT     PIN_DPAD_RIGHT
 #endif
 

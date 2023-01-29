@@ -13,6 +13,17 @@
     #pragma message "Using WASD-style Box layout (20 buttons)"
 #endif
 
+#if defined(SOCD_LRN)
+    #pragma message "SOCD type: LRN"
+    SOCD_PROXY socd = SOCD_PROXY_LRN;
+#elif defined(SOCD_2IP)
+    #pragma message "SOCD type: 2IP"
+    SOCD_PROXY socd = SOCD_PROXY_2IP;
+#elif defined(SOCD_YOLO)
+    #pragma message "SOCD type: YOLO"
+    SOCD_PROXY socd = SOCD_PROXY_YOLO;
+#endif
+
 uint16_t doButtons()
 {
     uint16_t buttons = 0;
@@ -80,28 +91,37 @@ uint16_t doCStick()
 
 uint8_t doHat()
 {
+    static uint8_t lastInput;
+    static bool upPressed, downPressed, leftPressed, rightPressed;
     uint8_t hat = HAT_NEUTRAL;
 
-    if ((gpio_get(INPUT_UP) == 0) && (gpio_get(INPUT_DOWN) >= 1))
+    if ((socd == SOCD_PROXY_LRN) || (socd == SOCD_PROXY_YOLO))  // YOLO doesn't work well with dpad so we default to LRN
     {
-        if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1)) hat = HAT_UP_LEFT;
-        else if ((gpio_get(INPUT_LEFT) >= 1) && (gpio_get(INPUT_RIGHT) == 0)) hat = HAT_UP_RIGHT;
-        else hat = HAT_UP;
-    }
-    else if ((gpio_get(INPUT_UP) >= 1) && (gpio_get(INPUT_DOWN) == 0))
-    {
-        if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1)) hat = HAT_DOWN_LEFT;
-        else if ((gpio_get(INPUT_LEFT) >= 1) && (gpio_get(INPUT_RIGHT) == 0)) hat = HAT_DOWN_RIGHT;
-        else hat = HAT_DOWN;
-    }
-    else
-    {
-        if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1)) hat = HAT_LEFT;
-        else if ((gpio_get(INPUT_LEFT) >= 1) && (gpio_get(INPUT_RIGHT) == 0)) hat = HAT_RIGHT;
-        else hat = HAT_NEUTRAL;
-    }
+        if ((gpio_get(INPUT_UP) >= 1) && (gpio_get(INPUT_DOWN) == 0))
+        {
+            if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1)) hat = HAT_DOWN_LEFT;
+            else if ((gpio_get(INPUT_LEFT) >= 1) && (gpio_get(INPUT_RIGHT) == 0)) hat = HAT_DOWN_RIGHT;
+            else hat = HAT_DOWN;
+        }
+        else if (gpio_get(INPUT_UP) == 0)
+        {
+            if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1)) hat = HAT_UP_LEFT;
+            else if ((gpio_get(INPUT_LEFT) >= 1) && (gpio_get(INPUT_RIGHT) == 0)) hat = HAT_UP_RIGHT;
+            else hat = HAT_UP;
+        }
+        else
+        {
+            if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1)) hat = HAT_LEFT;
+            else if ((gpio_get(INPUT_LEFT) >= 1) && (gpio_get(INPUT_RIGHT) == 0)) hat = HAT_RIGHT;
+            else hat = HAT_NEUTRAL;
+        }
 
-    return hat;
+        return hat;
+    }
+    else if (socd == SOCD_PROXY_2IP)
+    {
+        // TODO: How does 2IP plz
+    }
 }
 
 uint16_t doLeftStick()
@@ -112,14 +132,14 @@ uint16_t doLeftStick()
     
     if ((gpio_get(INPUT_MODX) >= 1) && (gpio_get(INPUT_MODY) >= 1))         // No modifiers
     {
-        if ((gpio_get(INPUT_UP) == 0) && (gpio_get(INPUT_DOWN) >= 1))           // Up && not Down
+        if (gpio_get(INPUT_UP) == 0)                                            // Up (overrides Down due to SOCD cleaning)
         {
             if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))        // Left && not Right
             {
                 y = UP_MAX;
                 x = LEFT_MAX;
             }
-            else if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))   // Not Left && Right
+            else if ((gpio_get(INPUT_LEFT) >= 1) && (gpio_get(INPUT_RIGHT) == 0))   // Not Left && Right
             {
                 y = UP_MAX;
                 x = RIGHT_MAX;
@@ -137,7 +157,7 @@ uint16_t doLeftStick()
                 y = DOWN_MAX;
                 x = LEFT_MAX;
             }
-            else if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
+            else if ((gpio_get(INPUT_LEFT) >= 0) && (gpio_get(INPUT_RIGHT) == 0))
             {
                 y = DOWN_MAX;
                 x = RIGHT_MAX;
@@ -148,14 +168,14 @@ uint16_t doLeftStick()
                 x = NEUTRAL;
             }
         }
-        else                                                                    // (Up && Down) || (not Up && not Down)
+        else if ((gpio_get(INPUT_UP) >= 1) && (gpio_get(INPUT_DOWN) >= 1))      // not Up && not Down
         {
             if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
             {
                 y = NEUTRAL;
                 x = LEFT_MAX;
             }
-            else if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
+            else if ((gpio_get(INPUT_LEFT) >= 1) && (gpio_get(INPUT_RIGHT) == 0))
             {
                 y = NEUTRAL;
                 x = RIGHT_MAX;
@@ -169,14 +189,14 @@ uint16_t doLeftStick()
     }
     else if ((gpio_get(INPUT_MODX) == 0) && (gpio_get(INPUT_MODY) >= 1))      // ModX = walking speed
     {
-        if ((gpio_get(INPUT_UP) == 0) && (gpio_get(INPUT_DOWN) >= 1))
+        if (gpio_get(INPUT_UP) == 0)
         {
             if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
             {
                 y = UP_HALF;
                 x = LEFT_HALF;
             }
-            else if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
+            else if ((gpio_get(INPUT_LEFT) >= 1) && (gpio_get(INPUT_RIGHT) == 0))
             {
                 y = UP_HALF;
                 x = RIGHT_HALF;
@@ -194,7 +214,7 @@ uint16_t doLeftStick()
                 y = DOWN_HALF;
                 x = LEFT_HALF;
             }
-            else if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
+            else if ((gpio_get(INPUT_LEFT) >= 1) && (gpio_get(INPUT_RIGHT) == 0))
             {
                 y = DOWN_HALF;
                 x = RIGHT_HALF;
@@ -212,7 +232,7 @@ uint16_t doLeftStick()
                 y = NEUTRAL;
                 x = LEFT_HALF;
             }
-            else if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
+            else if ((gpio_get(INPUT_LEFT) >= 1) && (gpio_get(INPUT_RIGHT) == 0))
             {
                 y = NEUTRAL;
                 x = RIGHT_HALF;
@@ -226,14 +246,14 @@ uint16_t doLeftStick()
     }
     else if ((gpio_get(INPUT_MODX) >= 1) && (gpio_get(INPUT_MODY) == 0))    // ModY = tiptoeing speed
     {
-        if ((gpio_get(INPUT_UP) == 0) && (gpio_get(INPUT_DOWN) >= 1))
+        if (gpio_get(INPUT_UP) == 0)
         {
             if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
             {
                 y = UP_MIN;
                 x = LEFT_MIN;
             }
-            else if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
+            else if ((gpio_get(INPUT_LEFT) >= 1) && (gpio_get(INPUT_RIGHT) == 0))
             {
                 y = UP_MIN;
                 x = RIGHT_MIN;
@@ -251,7 +271,7 @@ uint16_t doLeftStick()
                 y = DOWN_MIN;
                 x = LEFT_MIN;
             }
-            else if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
+            else if ((gpio_get(INPUT_LEFT) >= 1) && (gpio_get(INPUT_RIGHT) == 0))
             {
                 y = DOWN_MIN;
                 x = RIGHT_MIN;
@@ -269,7 +289,7 @@ uint16_t doLeftStick()
                 y = NEUTRAL;
                 x = LEFT_MIN;
             }
-            else if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
+            else if ((gpio_get(INPUT_LEFT) >= 1) && (gpio_get(INPUT_RIGHT) == 0))
             {
                 y = NEUTRAL;
                 x = RIGHT_MIN;
@@ -283,7 +303,8 @@ uint16_t doLeftStick()
     }
     else if ((gpio_get(INPUT_MODX) == 0) && (gpio_get(INPUT_MODY) == 0))    // TODO: Is that even a valid state to begin with ?
     {
-
+        x = NEUTRAL;
+        y = NEUTRAL;
     }
 
     lstick |= (x << 8);

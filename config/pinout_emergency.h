@@ -19,14 +19,14 @@
 #define PIN_1K              13
 #define PIN_2K              14
 #define PIN_3K              15
-#define PIN_4K              16
+#define PIN_4K              1
 
 #define PIN_SDA             -1
 #define PIN_SCL             -1
 
 #define PIN_LS_DP           17
-#define PIN_MODX            18
-#define PIN_MODY            19
+#define PIN_MODX            -1
+#define PIN_MODY            -1
 
 #define PIN_C_UP            20
 #define PIN_C_DOWN          21

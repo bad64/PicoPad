@@ -8,6 +8,12 @@
     #define SOCD_LRN
 #endif
 
+typedef enum {
+    SOCD_PROXY_LRN,
+    SOCD_PROXY_2IP,
+    SOCD_PROXY_YOLO
+} SOCD_PROXY;
+
 #if defined(MODE_GENERICBOX_18_BUTTONS) || defined(MODE_GENERICBOX_20_BUTTONS)
     #define INPUT_UP        PIN_4K
     #define INPUT_L         PIN_DPAD_LEFT
@@ -40,8 +46,8 @@
 #define INPUT_HOME      -1
 
 #define INPUT_LS_DP     PIN_LS_DP
-#define INPUT_MODX      PIN_MODX
-#define INPUT_MODY      PIN_MODY
+#define INPUT_MODX      PIN_SELECT
+#define INPUT_MODY      PIN_HOME
 
 #if defined(MODE_GENERICBOX_20_BUTTONS)
     #define INPUT_MS    PIN_3P

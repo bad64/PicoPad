@@ -13,7 +13,7 @@
 #include "tasks.h"
 
 /* Mode definitions */
-//#define MODE_GENERICBOX_18_BUTTONS
+#define MODE_GENERICBOX_18_BUTTONS
 //#define MODE_GENERICBOX_20_BUTTONS
 //#define MODE_WASDBOX
 //#define MODE_ANALOGSTICK
@@ -21,7 +21,7 @@
 
 // TODO
 /* All-button users: SOCD cleaning selection */
-//#define SOCD_LRN      // Left + Right = Neutral (default)
+#define SOCD_LRN      // Left + Right = Neutral (default)
 //#define SOCD_2IP      // Last input wins
 //#define SOCD_YOLO     // No cleaning; let the game figure it out
                         // and make TOs really really angry
