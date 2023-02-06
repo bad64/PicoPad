@@ -43,19 +43,23 @@ The following modes are available to select from:
 
 ## Status
 
-* All-button:       ![](https://geps.dev/progress/90)
-    * └ Issue with action buttons not sticking (presumably general)
+* All-button:       ![](https://geps.dev/progress/99)
+    * └ Need to figure out ModX + ModY
+    * └ Functional tests OK
 * Analog:           ![](https://geps.dev/progress/90)
     * └ Analog code complete, needs testing
 * I2C:              ![](https://geps.dev/progress/50)
     * └ No analog to digital yet
     * └ Needs testing
-* SOCD modes:       ![](https://geps.dev/progress/00)
-    * └ Not started yet
+* SOCD modes:       ![](https://geps.dev/progress/25)
+    * └ LRN implemented
 * Gamecube mode:    ![](https://geps.dev/progress/00)
     * └ Not started yet
 * Documentation:    ![](https://geps.dev/progress/33)
-    * └ Aside from this README there isn't much substance (unless you count the anti-nerf manifesto)
+    * └ Aside from this README there isn't much substance
+* Overall:          ![](https://geps.dev/progress/70)
+    * └ Linux builds but fails to flash ?!
+    
 
 ## What's next ?
 

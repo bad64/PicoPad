@@ -32,9 +32,9 @@ typedef enum {
 #define INPUT_X         PIN_2K
 #define INPUT_Y         PIN_2P
 
-#define INPUT_R         PIN_1P
+#define INPUT_R         PIN_3K
 #define INPUT_ZL        -1
-#define INPUT_ZR        PIN_3K
+#define INPUT_ZR        PIN_1P
 
 #define INPUT_C_UP      PIN_C_UP
 #define INPUT_C_DOWN    PIN_C_DOWN

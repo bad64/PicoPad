@@ -59,25 +59,27 @@
 
 // Analog values
 // TODO: Most of those are arbitrary, find a mathematical way to assign them
-#define NEUTRAL             127
-#define WALK_PERCENT        45
-#define TIPTOE_PERCENT      10
+// Values taken from https://www.ssbwiki.com/GameCube_controller#Analog_sticks
 
-#define UP_MAX              0
-#define UP_HALF             69
-#define UP_MIN              110
+#define NEUTRAL             128
+//#define WALK_PERCENT        45
+//#define TIPTOE_PERCENT      10
 
-#define DOWN_MAX            255
-#define DOWN_HALF           184
-#define DOWN_MIN            139
+#define UP_MAX              25
+#define UP_HALF             64
+#define UP_MIN              96
 
-#define LEFT_MAX            0
-#define LEFT_HALF           69
-#define LEFT_MIN            110
+#define DOWN_MAX            232
+#define DOWN_HALF           192
+#define DOWN_MIN            160
 
-#define RIGHT_MAX           255
-#define RIGHT_HALF          184
-#define RIGHT_MIN           139
+#define LEFT_MAX            25
+#define LEFT_HALF           64
+#define LEFT_MIN            96
+
+#define RIGHT_MAX           232
+#define RIGHT_HALF          192
+#define RIGHT_MIN           160
 
 uint16_t doButtons();
 uint16_t doCStick();
