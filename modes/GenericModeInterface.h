@@ -58,14 +58,11 @@
 #define SOCD_LAST_RIGHT     2
 
 // Analog values
-// TODO: Most of those are arbitrary, find a mathematical way to assign them
-// Values taken from https://www.ssbwiki.com/GameCube_controller#Analog_sticks
-
+// Based on the ones in https://www.ssbwiki.com/GameCube_controller#Analog_sticks
 #define NEUTRAL             128
-//#define WALK_PERCENT        45
-//#define TIPTOE_PERCENT      10
 
-#define UP_MAX              25
+// The idea is that the first step is 32 units, and the second 40, for no other reason that it seems to work best
+#define UP_MAX              24
 #define UP_HALF             64
 #define UP_MIN              96
 
@@ -73,7 +70,7 @@
 #define DOWN_HALF           192
 #define DOWN_MIN            160
 
-#define LEFT_MAX            25
+#define LEFT_MAX            24
 #define LEFT_HALF           64
 #define LEFT_MIN            96
 
@@ -81,6 +78,7 @@
 #define RIGHT_HALF          192
 #define RIGHT_MIN           160
 
+// Functions
 uint16_t doButtons();
 uint16_t doCStick();
 uint8_t doHat();

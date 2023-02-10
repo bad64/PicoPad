@@ -16,16 +16,18 @@ typedef enum {
 
 #if defined(MODE_GENERICBOX_18_BUTTONS) || defined(MODE_GENERICBOX_20_BUTTONS)
     #define INPUT_UP        PIN_4K
+    #define INPUT_DOWN      PIN_DPAD_DOWN
+    #define INPUT_LEFT      PIN_DPAD_UP
+    #define INPUT_RIGHT     PIN_DPAD_RIGHT
     #define INPUT_L         PIN_DPAD_LEFT
 #endif
 #if defined(MODE_WASDBOX)
-    #define INPUT_UP        PIN_DPAD_LEFT
+    #define INPUT_UP        PIN_DPAD_UP
+    #define INPUT_DOWN      PIN_DPAD_DOWN
+    #define INPUT_LEFT      PIN_DPAD_LEFT
+    #define INPUT_RIGHT     PIN_DPAD_RIGHT
     #define INPUT_L         PIN_4K
 #endif
-
-#define INPUT_DOWN      PIN_DPAD_DOWN
-#define INPUT_LEFT      PIN_DPAD_UP
-#define INPUT_RIGHT     PIN_DPAD_RIGHT
 
 #define INPUT_A         PIN_A
 #define INPUT_B         PIN_1K

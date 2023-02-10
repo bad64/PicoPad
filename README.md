@@ -58,7 +58,7 @@ The following modes are available to select from:
 * Documentation:    ![](https://geps.dev/progress/33)
     * └ Aside from this README there isn't much substance
 * Overall:          ![](https://geps.dev/progress/70)
-    * └ Linux builds but fails to flash ?!
+    * └ Linux builds, flashes, but doesn't work ?!
     
 
 ## What's next ?

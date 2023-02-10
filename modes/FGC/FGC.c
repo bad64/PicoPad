@@ -23,7 +23,11 @@ uint16_t doButtonsFGC()
     if (gpio_get(INPUT_FGC_4K) == 0) buttons |= MASK_ZL;
 
     // Other
-    if (gpio_get(INPUT_FGC_START) == 0) buttons |= MASK_START;
+    if (gpio_get(INPUT_FGC_START) == 0)
+    {
+        if (gpio_get(INPUT_FGC_MODY) == 0) buttons |= MASK_SELECT;
+        else buttons |= MASK_START;
+    }
 
     return buttons;
 }
@@ -38,7 +42,7 @@ uint8_t doLeftStickFGC_AllButtons()
 {
     uint8_t hat = HAT_NEUTRAL;
     bool upDog;
-    if ((gpio_get(INPUT_FGC_UP) == 0) || (gpio_get(PIN_A) == 0)) upDog = true;
+    if ((gpio_get(INPUT_FGC_UP) == 0) || (gpio_get(INPUT_FGC_MODX) == 0) || (gpio_get(PIN_A) == 0)) upDog = true;
     else upDog = false;
 
     if (upDog == true)
