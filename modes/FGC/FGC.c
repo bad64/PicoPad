@@ -66,3 +66,9 @@ uint8_t doLeftStickFGC_AllButtons()
 
     return hat;
 }
+
+uint8_t doLeftStickFGC_Analog()
+{
+    // TODO
+    return 0;
+}

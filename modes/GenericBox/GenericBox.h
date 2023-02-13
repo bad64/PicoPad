@@ -34,9 +34,9 @@ typedef enum {
 #define INPUT_X         PIN_2K
 #define INPUT_Y         PIN_2P
 
-#define INPUT_R         PIN_3K
+#define INPUT_R         PIN_1P
 #define INPUT_ZL        -1
-#define INPUT_ZR        PIN_1P
+#define INPUT_ZR        PIN_3K
 
 #define INPUT_C_UP      PIN_C_UP
 #define INPUT_C_DOWN    PIN_C_DOWN
@@ -51,7 +51,7 @@ typedef enum {
 #define INPUT_MODX      PIN_SELECT
 #define INPUT_MODY      PIN_HOME
 
-#if defined(MODE_GENERICBOX_20_BUTTONS)
+#if defined(MODE_GENERICBOX_20_BUTTONS) || defined(MODE_WASDBOX)
     #define INPUT_MS    PIN_3P
     #define INPUT_LS    PIN_4P
 #endif

@@ -156,7 +156,7 @@ int main(void)
             }
             else
             {
-                if (gpio_get(INPUT_LS_DP) == 0)
+                if ((gpio_get(INPUT_LS_DP) == 0) || ((gpio_get(INPUT_MODX) == 0) && (gpio_get(INPUT_MODY)) == 0))
                 {
                     report.x = NEUTRAL;
                     report.y = NEUTRAL;

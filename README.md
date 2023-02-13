@@ -43,9 +43,7 @@ The following modes are available to select from:
 
 ## Status
 
-* All-button:       ![](https://geps.dev/progress/99)
-    * └ Need to figure out ModX + ModY
-    * └ Functional tests OK
+* All-button:       ![](https://geps.dev/progress/100)
 * Analog:           ![](https://geps.dev/progress/90)
     * └ Analog code complete, needs testing
 * I2C:              ![](https://geps.dev/progress/50)

@@ -50,7 +50,11 @@
 #define INPUT_FGC_1K            PIN_1K
 #define INPUT_FGC_2K            PIN_2K
 #define INPUT_FGC_3K            PIN_3K
-#define INPUT_FGC_4K            PIN_4K
+#if (defined(MODE_GENERICBOX_18_BUTTONS) || defined(MODE_GENERICBOX_20_BUTTONS)) && !defined(MODE_WASDBOX)
+    #define INPUT_FGC_4K            PIN_DPAD_UP
+#elif (!defined(MODE_GENERICBOX_18_BUTTONS) && !defined(MODE_GENERICBOX_20_BUTTONS)) && defined(MODE_WASDBOX)
+    #define INPUT_FGC_4K            PIN_4K
+#endif 
 
 #define INPUT_FGC_START         PIN_START
 #define INPUT_FGC_SELECT        -1
@@ -63,6 +67,8 @@
 #define NEUTRAL                 127
 
 uint16_t doButtonsFGC();
+uint8_t doCStickFGC();
 uint8_t doLeftStickFGC_AllButtons();
+uint8_t doLeftStickFGC_Analog();
 
 #endif

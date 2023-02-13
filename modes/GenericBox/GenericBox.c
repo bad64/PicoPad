@@ -32,7 +32,13 @@ uint16_t doButtons()
     if (gpio_get(INPUT_B) == 0) buttons |= MASK_B;
     if (gpio_get(INPUT_X) == 0) buttons |= MASK_X;
     if (gpio_get(INPUT_Y) == 0) buttons |= MASK_Y;
-    if (gpio_get(INPUT_R) == 0) buttons |= MASK_R;
+    if (gpio_get(INPUT_R) == 0)                     // TODO: Stopgap measure because I don't have QDs to crimp on my L button lmao
+                                                    // Will delete later
+    {
+        if (gpio_get(INPUT_MODX) == 0) buttons |= MASK_L;
+        else if (gpio_get(INPUT_MODY) == 0) buttons |= (MASK_R | MASK_L);
+        else buttons |= MASK_R;
+    }
     if (gpio_get(INPUT_L) == 0) buttons |= MASK_L;
     if (gpio_get(INPUT_ZR) == 0) buttons |= MASK_ZR;
 
@@ -168,7 +174,7 @@ uint16_t doLeftStick()
                 x = NEUTRAL;
             }
         }
-        else if ((gpio_get(INPUT_UP) >= 1) && (gpio_get(INPUT_DOWN) >= 1))      // not Up && not Down
+        else if ((gpio_get(INPUT_UP) >= 1) && (gpio_get(INPUT_DOWN) >= 1))      // Not Up && not Down
         {
             if ((gpio_get(INPUT_LEFT) == 0) && (gpio_get(INPUT_RIGHT) >= 1))
             {
@@ -301,7 +307,7 @@ uint16_t doLeftStick()
             }
         }
     }
-    else if ((gpio_get(INPUT_MODX) == 0) && (gpio_get(INPUT_MODY) == 0))    // TODO: Is that even a valid state to begin with ?
+    else if ((gpio_get(INPUT_MODX) == 0) && (gpio_get(INPUT_MODY) == 0))
     {
         x = NEUTRAL;
         y = NEUTRAL;

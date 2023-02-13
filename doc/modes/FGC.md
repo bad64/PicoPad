@@ -9,22 +9,21 @@ FGC mode is a mode that is always accessible at plug-in time by holding the A bu
 ```
 INPUT           |        OUTPUT
 -------------------------------
-MOD X           |       DPAD UP
-A               |       DPAD UP
-All C buttons   |             -
-MOD Y           |             -
 LS/DP           |  Dpad mode is
                 |     permanent
-R               |             Y
-Y               |             X
+MOD X           |       DPAD UP
+A               |       DPAD UP
+All C buttons   |       Nothing
+MOD Y           |       Nothing
+Z               |    Y (aka 1P)
+Y               |    X (aka 2P)
 MS              |    R (aka 3P)
 LS              |    L (aka 4P)
-B               |     No change
-X               |             A
-Z               |            ZR
-Up              |ZL (non-WASD)\
-                |DPAD UP (WASD)
-L               |           !Up
+B               |No change (1K)
+X               |    A (aka 2K)
+R               |   ZR (aka 3K)
+Up (B0XX) \     |   ZL (aka 4K)
+Undefined (WASD)|
 ```
 
 * Analog and i2c layouts:

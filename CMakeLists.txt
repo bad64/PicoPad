@@ -8,6 +8,7 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_BUILD_TYPE Release)
 
+message("🛈 CMAKE_BUILD_TYPE:           ${CMAKE_NUILD_TYPE}")
 message("🛈 CMAKE_VERSION:              ${CMAKE_VERSION}")
 if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.25.1)
         # TODO: Figure out what this warning means to properly fix it
@@ -30,7 +31,7 @@ target_sources(picopad PUBLIC ${CMAKE_CURRENT_LIST_DIR}/main.c
 target_include_directories(picopad PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
 pico_add_extra_outputs(picopad)
-target_link_libraries(picopad pico_stdlib hardware_adc hardware_i2c tinyusb_device tinyusb_board pico_bootrom pico_bootsel_via_double_reset)
+target_link_libraries(picopad pico_stdlib pico_stdio_usb hardware_adc hardware_i2c tinyusb_device tinyusb_board pico_bootrom pico_bootsel_via_double_reset)
 
 pico_enable_stdio_usb(picopad 1)
 pico_enable_stdio_uart(picopad 0)
